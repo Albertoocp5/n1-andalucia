@@ -1,16 +1,16 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#101e28"><meta name="description" content="Ficha de jugador de la Primera Nacional masculina de Andalucía: percentiles, mapa de tiro e historial."><title>Jugador · N1 Andalucía</title><link rel="stylesheet" href="/portal.css"><link rel="stylesheet" href="/avanzada.css"><script type="module" src="/jugador.js"></script></head>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#101e28"><meta name="description" content="Ficha de jugador de la Primera Nacional masculina de Andalucía: puesto en cada estadística, mapa de tiro e historial."><title>Jugador · N1 Andalucía</title><link rel="stylesheet" href="/portal.css"><link rel="stylesheet" href="/avanzada.css"><script type="module" src="/jugador.js"></script><script type="module" src="/comun.js"></script></head>
 <body>
 <header class="masthead"><div class="frame brandbar"><a class="brand" href="/"><span class="badge">N1</span><span>PRIMERA NACIONAL<small>ANDALUCÍA</small></span></a><span class="season">Temporada 2026/27</span></div>
-<nav class="frame mainnav" aria-label="Competición"><a href="/">Marcador</a><a href="/avanzada.html">Estadística avanzada</a><a href="/avanzada.html?tab=jugadores">Jugadores</a><a href="/avanzada.html?tab=equipos">Equipos</a><a href="/avanzada.html?tab=simulador">Simulador</a><a href="/liga.html">Laboratorio de liga</a><a href="/andalucia.html#cobertura">Cobertura</a></nav></header>
+<nav class="frame mainnav" aria-label="Competición"></nav></header>
 <main class="frame">
 <section class="pl-head"><div><small class="kicker" id="plKicker">FICHA DE JUGADOR</small><h1 id="plName">Cargando…</h1><p class="adv-meta" id="plMeta"></p></div>
 <label class="pl-search">Buscar otro jugador<input id="plSearch" type="search" list="plList" placeholder="Nombre"><datalist id="plList"></datalist></label></section>
 <div class="adv-cards pl-cards" id="plCards"></div>
-<section class="pl-section"><div class="section-head"><div><h2>Percentiles</h2><p class="adv-note" id="pctNote"></p></div>
-<div class="adv-filters"><label>Comparar con<select id="pctGroup"><option value="liga">Toda la N1</option><option value="grupo">Su grupo</option></select></label><label>Superponer jugador<select id="pctVs"><option value="">Ninguno</option></select></label></div></div>
+<section class="pl-section"><div class="section-head"><div><h2>Dónde está en la liga</h2><p class="adv-note" id="pctNote"></p></div>
+<div class="adv-filters"><label>Comparar con<select id="pctGroup"><option value="grupo">Su grupo</option><option value="liga">Toda la N1</option></select></label><label>Superponer jugador<select id="pctVs"><option value="">Ninguno</option></select></label></div></div>
 <div class="pct-grid" id="pctGrid"></div></section>
-<section class="pl-section"><h2>Perfiles parecidos</h2><p class="adv-note">Jugadores de la N1 con los percentiles más cercanos en anotación, creación, rebote, defensa e impacto (mínimo de minutos aplicado).</p><div class="similar" id="similar"></div></section>
+<section class="pl-section solo-ana"><h2>Perfiles parecidos</h2><p class="adv-note">Jugadores de la N1 con los números más parecidos en anotación, creación, rebote, defensa e impacto (mínimo de minutos aplicado).</p><div class="similar" id="similar"></div></section>
 <section class="pl-section"><h2>Mapa de tiro</h2><div class="adv-split"><div id="plCourt"></div><div class="shot-side"><div id="plZones"></div><div id="plClutch"></div></div></div></section>
 <section class="pl-section"><h2>Partido a partido</h2><figure class="adv-figure"><figcaption>Puntos y valoración por partido</figcaption><div id="plTrend"></div></figure><div class="table-wrap" id="plLog"></div></section>
 </main>
