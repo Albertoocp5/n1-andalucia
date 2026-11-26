@@ -1,0 +1,23 @@
+// Definiciones compartidas por la estadística avanzada y las fichas.
+export const GLOSSARY = {
+  'Pos.': 'Posesiones: tiros de campo intentados − rebotes ofensivos + pérdidas + 0,44 × tiros libres intentados (media de ambos equipos).',
+  'Ataque': 'OffRtg: puntos anotados por cada 100 posesiones.',
+  'Defensa': 'DefRtg: puntos recibidos por cada 100 posesiones. Menos es mejor.',
+  'Net': 'Diferencia neta: Ataque − Defensa. Por encima de 0, el equipo supera a sus rivales.',
+  'Ritmo': 'Posesiones por 40 minutos.',
+  'eFG%': 'Tiro de campo efectivo: (canastas + 0,5 × triples anotados) / tiros de campo intentados.',
+  'TS%': 'Tiro real: puntos / (2 × (tiros de campo + 0,44 × tiros libres intentados)). Incluye triples y libres.',
+  'TOV%': 'Pérdidas por cada 100 posesiones. Menos es mejor.',
+  'ORB%': 'Porcentaje de rebotes ofensivos disponibles que captura el equipo (o el jugador mientras está en pista).',
+  'DRB%': 'Porcentaje de rebotes defensivos disponibles que captura.',
+  'FTr': 'Tiros libres intentados por tiro de campo intentado.',
+  'AST%': 'Equipo: canastas asistidas. Jugador: canastas de sus compañeros en pista que asiste él.',
+  '3PAr': 'Porcentaje de tiros de campo que son triples.',
+  'USG%': 'Uso: parte de las jugadas del equipo (tiros, libres y pérdidas) que termina el jugador mientras está en pista.',
+  'PPP': 'Puntos por posesión usada por el jugador.',
+  '+/-': 'Diferencia de puntos del equipo con el jugador en pista, calculada con el jugada a jugada.',
+  'On/Off': 'Net del equipo con el jugador en pista menos Net sin él. Requiere más de 60 posesiones del equipo sin él.',
+  'Clutch': 'Últimos 5 minutos del 4.º periodo o prórroga con diferencia de 5 puntos o menos.',
+  'Parcial': 'Puntos seguidos de un equipo sin que anote el rival. Se muestran los de 8 o más.',
+  'VAL': 'Valoración del acta oficial.',
+};

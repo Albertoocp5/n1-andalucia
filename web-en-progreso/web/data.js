@@ -1,0 +1,711 @@
+const league = {
+ "rows": [
+  [
+   "CB EL PALO - BASKET4LIFE",
+   7,
+   7,
+   0,
+   604,
+   477
+  ],
+  [
+   "EBG MALAGA TECNOCASA",
+   7,
+   5,
+   2,
+   617,
+   449
+  ],
+  [
+   "INVERMONEDA CB ALHAURÍN DE LA TORRE",
+   7,
+   5,
+   2,
+   518,
+   435
+  ],
+  [
+   "MALAGA BASKET",
+   7,
+   5,
+   2,
+   487,
+   470
+  ],
+  [
+   "CB BENALMADENA",
+   7,
+   4,
+   3,
+   536,
+   510
+  ],
+  [
+   "UNICAJA",
+   7,
+   4,
+   3,
+   496,
+   504
+  ],
+  [
+   "LINAQUA CB LINARES",
+   7,
+   3,
+   4,
+   534,
+   507
+  ],
+  [
+   "CB SALLIVER FUENGIROLA HIGUERÓN RESORT",
+   7,
+   3,
+   4,
+   459,
+   542
+  ],
+  [
+   "CD COLEGIO EL PINAR",
+   7,
+   2,
+   5,
+   501,
+   531
+  ],
+  [
+   "CLUB ANDUJAR",
+   7,
+   2,
+   5,
+   437,
+   519
+  ],
+  [
+   "CAMPOAMENO CB LA MOTA",
+   7,
+   1,
+   6,
+   450,
+   566
+  ],
+  [
+   "CAJA RURAL JAÉN C.B.",
+   7,
+   1,
+   6,
+   419,
+   548
+  ]
+ ],
+ "games": [
+  [
+   "03.10.2026 17:00",
+   "CB EL PALO - BASKET4LIFE",
+   "CAJA RURAL JAÉN C.B.",
+   "POLIDEPORTIVO LA MOSCA",
+   "89-58"
+  ],
+  [
+   "03.10.2026 18:30",
+   "MALAGA BASKET",
+   "LINAQUA CB LINARES",
+   "CIUDAD DEPORTIVA CARRANQUE",
+   "63-60"
+  ],
+  [
+   "03.10.2026 19:00",
+   "CLUB ANDUJAR",
+   "EBG MALAGA TECNOCASA",
+   "Pab Mun José L. Fernández Mena",
+   "53-91"
+  ],
+  [
+   "03.10.2026 19:00",
+   "INVERMONEDA CB ALHAURÍN DE LA TORRE",
+   "CB SALLIVER FUENGIROLA HIGUERÓN RESORT",
+   "PABELLON BLAS INFANTE",
+   "80-45"
+  ],
+  [
+   "04.10.2026 12:00",
+   "CAMPOAMENO CB LA MOTA",
+   "CD COLEGIO EL PINAR",
+   "COMPLEJO PDVO. ALCALA LA REAL",
+   "75-85"
+  ],
+  [
+   "04.10.2026 13:30",
+   "UNICAJA",
+   "CB BENALMADENA",
+   "PAB JOSE Mª MARTÍN URBANO \"A\"",
+   "70-92"
+  ],
+  [
+   "10.10.2026 17:30",
+   "LINAQUA CB LINARES",
+   "CB EL PALO - BASKET4LIFE",
+   "PABELLON JULIAN JIMENEZ",
+   "72-80"
+  ],
+  [
+   "10.10.2026 17:45",
+   "CAJA RURAL JAÉN C.B.",
+   "UNICAJA",
+   "PABELLON CARLOS MARTINEZ ESTEBAN",
+   "53-68"
+  ],
+  [
+   "10.10.2026 19:00",
+   "CB BENALMADENA",
+   "CLUB ANDUJAR",
+   "POLIDEPORTIVO RAMON RICO",
+   "81-68"
+  ],
+  [
+   "11.10.2026 12:00",
+   "CB SALLIVER FUENGIROLA HIGUERÓN RESORT",
+   "MALAGA BASKET",
+   "COMPLEJO DEPORTIVO ELOLA",
+   "52-67"
+  ],
+  [
+   "11.10.2026 12:45",
+   "CD COLEGIO EL PINAR",
+   "INVERMONEDA CB ALHAURÍN DE LA TORRE",
+   "COLEGIO EL PINAR",
+   "65-78"
+  ],
+  [
+   "11.10.2026 18:00",
+   "EBG MALAGA TECNOCASA",
+   "CAMPOAMENO CB LA MOTA",
+   "PAB JOSE Mª MARTÍN URBANO \"A\"",
+   "115-56"
+  ],
+  [
+   "17.10.2026 17:45",
+   "CAJA RURAL JAÉN C.B.",
+   "LINAQUA CB LINARES",
+   "PABELLON CARLOS MARTINEZ ESTEBAN",
+   "63-85"
+  ],
+  [
+   "17.10.2026 18:30",
+   "MALAGA BASKET",
+   "CD COLEGIO EL PINAR",
+   "CIUDAD DEPORTIVA CARRANQUE",
+   "77-68"
+  ],
+  [
+   "17.10.2026 19:00",
+   "INVERMONEDA CB ALHAURÍN DE LA TORRE",
+   "EBG MALAGA TECNOCASA",
+   "PABELLON BLAS INFANTE",
+   "61-82"
+  ],
+  [
+   "17.10.2026 19:15",
+   "CB EL PALO - BASKET4LIFE",
+   "CB SALLIVER FUENGIROLA HIGUERÓN RESORT",
+   "POLIDEPORTIVO LA MOSCA",
+   "107-65"
+  ],
+  [
+   "18.10.2026 12:00",
+   "CAMPOAMENO CB LA MOTA",
+   "CB BENALMADENA",
+   "COMPLEJO PDVO. ALCALA LA REAL",
+   "65-78"
+  ],
+  [
+   "24.10.2026 17:30",
+   "LINAQUA CB LINARES",
+   "UNICAJA",
+   "PABELLON JULIAN JIMENEZ",
+   "86-90"
+  ],
+  [
+   "24.10.2026 18:00",
+   "CB SALLIVER FUENGIROLA HIGUERÓN RESORT",
+   "CAJA RURAL JAÉN C.B.",
+   "PABELLON JUAN GOMEZ JUANITO",
+   "66-53"
+  ],
+  [
+   "24.10.2026 19:00",
+   "CB BENALMADENA",
+   "INVERMONEDA CB ALHAURÍN DE LA TORRE",
+   "POLIDEPORTIVO RAMON RICO",
+   "73-68"
+  ],
+  [
+   "24.10.2026 19:00",
+   "CLUB ANDUJAR",
+   "CAMPOAMENO CB LA MOTA",
+   "Pab Mun José L. Fernández Mena",
+   "88-62"
+  ],
+  [
+   "25.10.2026 12:45",
+   "CD COLEGIO EL PINAR",
+   "CB EL PALO - BASKET4LIFE",
+   "COLEGIO EL PINAR",
+   "74-87"
+  ],
+  [
+   "25.10.2026 13:30",
+   "EBG MALAGA TECNOCASA",
+   "MALAGA BASKET",
+   "PAB JOSE Mª MARTÍN URBANO \"A\"",
+   "95-58"
+  ],
+  [
+   "02.11.2026 19:00",
+   "UNICAJA",
+   "CLUB ANDUJAR",
+   "PAB JOSE Mª MARTÍN URBANO \"A\"",
+   "55-72"
+  ],
+  [
+   "07.11.2026 17:30",
+   "CAJA RURAL JAÉN C.B.",
+   "CD COLEGIO EL PINAR",
+   "PABELLON CARLOS MARTINEZ ESTEBAN",
+   "57-86"
+  ],
+  [
+   "07.11.2026 17:30",
+   "LINAQUA CB LINARES",
+   "CB SALLIVER FUENGIROLA HIGUERÓN RESORT",
+   "PABELLON JULIAN JIMENEZ",
+   "78-80"
+  ],
+  [
+   "07.11.2026 18:30",
+   "MALAGA BASKET",
+   "CB BENALMADENA",
+   "CIUDAD DEPORTIVA CARRANQUE",
+   "85-82"
+  ],
+  [
+   "07.11.2026 19:00",
+   "INVERMONEDA CB ALHAURÍN DE LA TORRE",
+   "CLUB ANDUJAR",
+   "PABELLON BLAS INFANTE",
+   "76-41"
+  ],
+  [
+   "08.11.2026 13:30",
+   "EBG MALAGA TECNOCASA",
+   "CB EL PALO - BASKET4LIFE",
+   "PAB JOSE Mª MARTÍN URBANO \"B\"",
+   "84-92"
+  ],
+  [
+   "08.11.2026 13:30",
+   "UNICAJA",
+   "CAMPOAMENO CB LA MOTA",
+   "PAB JOSE Mª MARTÍN URBANO \"A\"",
+   "60-55"
+  ],
+  [
+   "14.11.2026 18:00",
+   "CB SALLIVER FUENGIROLA HIGUERÓN RESORT",
+   "UNICAJA",
+   "PABELLON JUAN GOMEZ JUANITO",
+   "70-97"
+  ],
+  [
+   "14.11.2026 19:00",
+   "CB BENALMADENA",
+   "CB EL PALO - BASKET4LIFE",
+   "POLIDEPORTIVO RAMON RICO",
+   "58-71"
+  ],
+  [
+   "14.11.2026 19:00",
+   "CLUB ANDUJAR",
+   "MALAGA BASKET",
+   "Pab Mun José L. Fernández Mena",
+   "49-76"
+  ],
+  [
+   "14.11.2026 19:00",
+   "EBG MALAGA TECNOCASA",
+   "CAJA RURAL JAÉN C.B.",
+   "PAB JOSE Mª MARTÍN URBANO \"B\"",
+   "82-52"
+  ],
+  [
+   "14.11.2026 19:00",
+   "CAMPOAMENO CB LA MOTA",
+   "INVERMONEDA CB ALHAURÍN DE LA TORRE",
+   "COMPLEJO PDVO. ALCALA LA REAL",
+   "73-79"
+  ],
+  [
+   "15.11.2026 12:45",
+   "CD COLEGIO EL PINAR",
+   "LINAQUA CB LINARES",
+   "COLEGIO EL PINAR",
+   "63-76"
+  ],
+  [
+   "21.11.2026 17:30",
+   "LINAQUA CB LINARES",
+   "EBG MALAGA TECNOCASA",
+   "PABELLON JULIAN JIMENEZ",
+   "77-68"
+  ],
+  [
+   "21.11.2026 18:00",
+   "CB SALLIVER FUENGIROLA HIGUERÓN RESORT",
+   "CD COLEGIO EL PINAR",
+   "PABELLON JUAN GOMEZ JUANITO",
+   "81-60"
+  ],
+  [
+   "21.11.2026 18:30",
+   "CB EL PALO - BASKET4LIFE",
+   "CLUB ANDUJAR",
+   "PAB JOSE Mª MARTÍN URBANO \"A\"",
+   "78-66"
+  ],
+  [
+   "21.11.2026 18:30",
+   "MALAGA BASKET",
+   "CAMPOAMENO CB LA MOTA",
+   "CIUDAD DEPORTIVA CARRANQUE",
+   "61-64"
+  ],
+  [
+   "22.11.2026 13:30",
+   "UNICAJA",
+   "INVERMONEDA CB ALHAURÍN DE LA TORRE",
+   "PAB JOSE Mª MARTÍN URBANO \"A\"",
+   "56-76"
+  ],
+  [
+   "22.11.2026 17:15",
+   "CAJA RURAL JAÉN C.B.",
+   "CB BENALMADENA",
+   "PABELLON CARLOS MARTINEZ ESTEBAN",
+   "83-72"
+  ],
+  [
+   "28.11.2026 19:00",
+   "CLUB ANDUJAR",
+   "CAJA RURAL JAÉN C.B.",
+   "Pab Mun José L. Fernández Mena",
+   "-"
+  ],
+  [
+   "28.11.2026 19:00",
+   "INVERMONEDA CB ALHAURÍN DE LA TORRE",
+   "MALAGA BASKET",
+   "PABELLON BLAS INFANTE",
+   "-"
+  ],
+  [
+   "28.11.2026 19:00",
+   "CB BENALMADENA",
+   "LINAQUA CB LINARES",
+   "POLIDEPORTIVO RAMON RICO",
+   "-"
+  ],
+  [
+   "28.11.2026 19:00",
+   "CAMPOAMENO CB LA MOTA",
+   "CB EL PALO - BASKET4LIFE",
+   "COMPLEJO PDVO. ALCALA LA REAL",
+   "-"
+  ],
+  [
+   "29.11.2026 12:45",
+   "CD COLEGIO EL PINAR",
+   "UNICAJA",
+   "COLEGIO EL PINAR",
+   "-"
+  ],
+  [
+   "29.11.2026 13:30",
+   "EBG MALAGA TECNOCASA",
+   "CB SALLIVER FUENGIROLA HIGUERÓN RESORT",
+   "PAB JOSE Mª MARTÍN URBANO \"A\"",
+   "-"
+  ],
+  [
+   "12.12.2026 17:15",
+   "CAJA RURAL JAÉN C.B.",
+   "CAMPOAMENO CB LA MOTA",
+   "PABELLON CARLOS MARTINEZ ESTEBAN",
+   "-"
+  ],
+  [
+   "12.12.2026 17:30",
+   "LINAQUA CB LINARES",
+   "CLUB ANDUJAR",
+   "PABELLON JULIAN JIMENEZ",
+   "-"
+  ],
+  [
+   "12.12.2026 18:00",
+   "CB SALLIVER FUENGIROLA HIGUERÓN RESORT",
+   "CB BENALMADENA",
+   "PABELLON JUAN GOMEZ JUANITO",
+   "-"
+  ],
+  [
+   "13.12.2026 12:45",
+   "CD COLEGIO EL PINAR",
+   "EBG MALAGA TECNOCASA",
+   "COLEGIO EL PINAR",
+   "-"
+  ],
+  [
+   "13.12.2026 13:30",
+   "UNICAJA",
+   "MALAGA BASKET",
+   "PAB JOSE Mª MARTÍN URBANO \"A\"",
+   "-"
+  ],
+  [
+   "16.12.2026 21:00",
+   "INVERMONEDA CB ALHAURÍN DE LA TORRE",
+   "CB EL PALO - BASKET4LIFE",
+   "PABELLON BLAS INFANTE",
+   "-"
+  ],
+  [
+   "19.12.2026 18:30",
+   "MALAGA BASKET",
+   "CB EL PALO - BASKET4LIFE",
+   "CIUDAD DEPORTIVA CARRANQUE",
+   "-"
+  ],
+  [
+   "19.12.2026 19:00",
+   "CB BENALMADENA",
+   "CD COLEGIO EL PINAR",
+   "POLIDEPORTIVO RAMON RICO",
+   "-"
+  ],
+  [
+   "19.12.2026 19:00",
+   "CLUB ANDUJAR",
+   "CB SALLIVER FUENGIROLA HIGUERÓN RESORT",
+   "Pab Mun José L. Fernández Mena",
+   "-"
+  ],
+  [
+   "19.12.2026 19:00",
+   "INVERMONEDA CB ALHAURÍN DE LA TORRE",
+   "CAJA RURAL JAÉN C.B.",
+   "PABELLON BLAS INFANTE",
+   "-"
+  ],
+  [
+   "19.12.2026 19:00",
+   "CAMPOAMENO CB LA MOTA",
+   "LINAQUA CB LINARES",
+   "COMPLEJO PDVO. ALCALA LA REAL",
+   "-"
+  ],
+  [
+   "20.12.2026 13:30",
+   "UNICAJA",
+   "EBG MALAGA TECNOCASA",
+   "PAB JOSE Mª MARTÍN URBANO \"A\"",
+   "-"
+  ],
+  [
+   "09.01.2027 17:15",
+   "CAJA RURAL JAÉN C.B.",
+   "MALAGA BASKET",
+   "PABELLON CARLOS MARTINEZ ESTEBAN",
+   "-"
+  ],
+  [
+   "09.01.2027 17:30",
+   "LINAQUA CB LINARES",
+   "INVERMONEDA CB ALHAURÍN DE LA TORRE",
+   "PABELLON JULIAN JIMENEZ",
+   "-"
+  ],
+  [
+   "09.01.2027 18:00",
+   "CB SALLIVER FUENGIROLA HIGUERÓN RESORT",
+   "CAMPOAMENO CB LA MOTA",
+   "PABELLON JUAN GOMEZ JUANITO",
+   "-"
+  ],
+  [
+   "09.01.2027 19:15",
+   "CB EL PALO - BASKET4LIFE",
+   "UNICAJA",
+   "POLIDEPORTIVO LA MOSCA",
+   "-"
+  ],
+  [
+   "10.01.2027 12:45",
+   "CD COLEGIO EL PINAR",
+   "CLUB ANDUJAR",
+   "COLEGIO EL PINAR",
+   "-"
+  ],
+  [
+   "10.01.2027 13:30",
+   "EBG MALAGA TECNOCASA",
+   "CB BENALMADENA",
+   "PAB JOSE Mª MARTÍN URBANO \"A\"",
+   "-"
+  ],
+  [
+   "16.01.2027 17:15",
+   "CAJA RURAL JAÉN C.B.",
+   "CB EL PALO - BASKET4LIFE",
+   "PABELLON CARLOS MARTINEZ ESTEBAN",
+   "-"
+  ],
+  [
+   "16.01.2027 17:30",
+   "LINAQUA CB LINARES",
+   "MALAGA BASKET",
+   "PABELLON JULIAN JIMENEZ",
+   "-"
+  ],
+  [
+   "16.01.2027 18:00",
+   "CB SALLIVER FUENGIROLA HIGUERÓN RESORT",
+   "INVERMONEDA CB ALHAURÍN DE LA TORRE",
+   "PABELLON JUAN GOMEZ JUANITO",
+   "-"
+  ],
+  [
+   "16.01.2027 19:00",
+   "CB BENALMADENA",
+   "UNICAJA",
+   "POLIDEPORTIVO RAMON RICO",
+   "-"
+  ],
+  [
+   "17.01.2027 12:45",
+   "CD COLEGIO EL PINAR",
+   "CAMPOAMENO CB LA MOTA",
+   "COLEGIO EL PINAR",
+   "-"
+  ],
+  [
+   "17.01.2027 13:30",
+   "EBG MALAGA TECNOCASA",
+   "CLUB ANDUJAR",
+   "PAB JOSE Mª MARTÍN URBANO \"A\"",
+   "-"
+  ],
+  [
+   "23.01.2027 17:00",
+   "CB EL PALO - BASKET4LIFE",
+   "LINAQUA CB LINARES",
+   "POLIDEPORTIVO LA MOSCA",
+   "-"
+  ],
+  [
+   "23.01.2027 18:30",
+   "MALAGA BASKET",
+   "CB SALLIVER FUENGIROLA HIGUERÓN RESORT",
+   "CIUDAD DEPORTIVA CARRANQUE",
+   "-"
+  ],
+  [
+   "23.01.2027 19:00",
+   "CLUB ANDUJAR",
+   "CB BENALMADENA",
+   "Pab Mun José L. Fernández Mena",
+   "-"
+  ],
+  [
+   "23.01.2027 19:00",
+   "INVERMONEDA CB ALHAURÍN DE LA TORRE",
+   "CD COLEGIO EL PINAR",
+   "PABELLON BLAS INFANTE",
+   "-"
+  ],
+  [
+   "23.01.2027 19:00",
+   "CAMPOAMENO CB LA MOTA",
+   "EBG MALAGA TECNOCASA",
+   "COMPLEJO PDVO. ALCALA LA REAL",
+   "-"
+  ],
+  [
+   "24.01.2027 13:30",
+   "UNICAJA",
+   "CAJA RURAL JAÉN C.B.",
+   "PAB JOSE Mª MARTÍN URBANO \"A\"",
+   "-"
+  ],
+  [
+   "30.01.2027 17:30",
+   "LINAQUA CB LINARES",
+   "CAJA RURAL JAÉN C.B.",
+   "PABELLON JULIAN JIMENEZ",
+   "-"
+  ],
+  [
+   "30.01.2027 18:00",
+   "CB SALLIVER FUENGIROLA HIGUERÓN RESORT",
+   "CB EL PALO - BASKET4LIFE",
+   "PABELLON JUAN GOMEZ JUANITO",
+   "-"
+  ],
+  [
+   "30.01.2027 19:00",
+   "CB BENALMADENA",
+   "CAMPOAMENO CB LA MOTA",
+   "POLIDEPORTIVO RAMON RICO",
+   "-"
+  ],
+  [
+   "30.01.2027 19:00",
+   "CLUB ANDUJAR",
+   "UNICAJA",
+   "Pab Mun José L. Fernández Mena",
+   "-"
+  ],
+  [
+   "31.01.2027 12:45",
+   "CD COLEGIO EL PINAR",
+   "MALAGA BASKET",
+   "COLEGIO EL PINAR",
+   "-"
+  ],
+  [
+   "31.01.2027 13:30",
+   "EBG MALAGA TECNOCASA",
+   "INVERMONEDA CB ALHAURÍN DE LA TORRE",
+   "PAB JOSE Mª MARTÍN URBANO \"A\"",
+   "-"
+  ],
+  [
+   "06.02.2027 17:00",
+   "CB EL PALO - BASKET4LIFE",
+   "CD COLEGIO EL PINAR",
+   "POLIDEPORTIVO LA MOSCA",
+   "-"
+  ],
+  [
+   "06.02.2027 17:15",
+   "CAJA RURAL JAÉN C.B.",
+   "CB SALLIVER FUENGIROLA HIGUERÓN RESORT",
+   "PABELLON CARLOS MARTINEZ ESTEBAN",
+   "-"
+  ],
+  [
+   "06.02.2027 18:30",
+   "MALAGA BASKET",
+   "EBG MALAGA TECNOCASA",
+   "CIUDAD DEPORTIVA CARRANQUE",
+   "-"
+  ]
+ ]
+};

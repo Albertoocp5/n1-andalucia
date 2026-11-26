@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#101e28"><meta name="description" content="Estadística avanzada de la Primera Nacional masculina de Andalucía calculada con el jugada a jugada de Afición FAB."><title>Estadística avanzada · N1 Andalucía</title><link rel="stylesheet" href="/portal.css"><link rel="stylesheet" href="/avanzada.css"><script type="module" src="/avanzada.js"></script></head>
+<body>
+<header class="masthead"><div class="frame brandbar"><a class="brand" href="/"><span class="badge">N1</span><span>PRIMERA NACIONAL<small>ANDALUCÍA</small></span></a><span class="season">Temporada 2026/27</span></div>
+<nav class="frame mainnav" aria-label="Competición"><a href="/">Marcador</a><a href="/avanzada.html">Estadística avanzada</a><a href="/avanzada.html?tab=jugadores">Jugadores</a><a href="/avanzada.html?tab=equipos">Equipos</a><a href="/avanzada.html?tab=simulador">Simulador</a><a href="/liga.html">Laboratorio de liga</a><a href="/andalucia.html#cobertura">Cobertura</a></nav></header>
+<main class="frame">
+<section class="adv-head"><div><small class="kicker">JUGADA A JUGADA · AFICIÓN FAB</small><h1>Estadística avanzada</h1><p id="advMeta" class="adv-meta">Cargando…</p></div>
+<div class="adv-filters"><label>Grupo<select id="grupo"><option value="">Todos</option><option>A</option><option>B</option><option>C</option><option>D</option></select></label><label>Equipo<select id="equipo"><option value="">Todos</option></select></label></div></section>
+<div class="adv-tabs" role="tablist"><button role="tab" data-tab="equipos" aria-selected="true">Equipos</button><button role="tab" data-tab="jugadores">Jugadores</button><button role="tab" data-tab="quintetos">Quintetos</button><button role="tab" data-tab="tiro">Mapas de tiro</button><button role="tab" data-tab="clutch">Final apretado</button><button role="tab" data-tab="simulador">Simulador</button><button role="tab" data-tab="glosario">Glosario</button></div>
+<section id="tab-equipos" class="adv-panel">
+  <div class="adv-cards" id="teamCards"></div>
+  <div class="adv-split"><figure class="adv-figure"><figcaption>Ataque contra defensa <small>puntos por 100 posesiones · arriba a la derecha, mejor</small></figcaption><div id="scatter"></div></figure>
+  <div class="adv-table-box"><h2>Ratings y cuatro factores</h2><div class="table-wrap" id="teamTable"></div></div></div>
+</section>
+<section id="tab-jugadores" class="adv-panel" hidden>
+  <div class="adv-filters"><label>Buscar<input id="q" type="search" placeholder="Jugador"></label><label>Minutos mínimos<input id="minMin" type="number" min="0" step="10" value="60"></label><label>Escala<select id="escala"><option value="pp">Por partido</option><option value="p40">Por 40 minutos</option><option value="p100">Por 100 posesiones</option><option value="tot">Totales</option></select></label><label>Vista<select id="vista"><option value="basica">Básica</option><option value="tiro">Tiro</option><option value="impacto">Impacto en pista</option><option value="rol">Rol y rebote</option></select></label><button id="csv" type="button">Descargar CSV</button></div>
+  <p class="adv-note" id="playerNote"></p><div class="table-wrap" id="playerTable"></div>
+</section>
+<section id="tab-quintetos" class="adv-panel" hidden>
+  <div class="adv-filters"><label>Minutos mínimos juntos<input id="minLineup" type="number" min="5" step="5" value="10"></label></div>
+  <p class="adv-note">Cinco jugadores en pista a la vez, reconstruidos con los cambios del jugada a jugada. Pos., ratings y +/- del equipo mientras juegan juntos.</p><div class="table-wrap" id="lineupTable"></div>
+</section>
+<section id="tab-tiro" class="adv-panel" hidden>
+  <div class="adv-filters"><label>Jugador<select id="shotPlayer"><option value="">Todo el equipo</option></select></label><label>Tipo<select id="shotType"><option value="">Todos</option><option value="2">Tiros de 2</option><option value="3">Triples</option></select></label></div>
+  <p class="adv-note" id="shotNote">Elige un equipo arriba para ver su mapa de tiro.</p>
+  <div class="adv-split"><div id="shotCourt"></div><div class="shot-side"><h2>Por zonas</h2><div id="shotZones"></div><p class="adv-note">Posiciones de Afición FAB convertidas a una pista FIBA. Zonas según la clasificación de la FAB; «vs. liga» compara con el acierto medio de la N1 en esa zona.</p></div></div>
+</section>
+<section id="tab-clutch" class="adv-panel" hidden>
+  <p class="adv-note">Últimos 5 minutos del cuarto periodo o de la prórroga con diferencia de 5 puntos o menos.</p><div class="table-wrap" id="clutchTable"></div>
+</section>
+<section id="tab-simulador" class="adv-panel" hidden>
+  <p class="adv-note" id="simNote">Calculando…</p>
+  <div class="table-wrap" id="simTable"></div>
+  <h2 class="sim-h">Próximos partidos</h2><div class="table-wrap" id="simNext"></div>
+  <p class="adv-note">Cómo se calcula: cada equipo recibe una fuerza en puntos a partir de su diferencia en cada partido, corregida por el rival y por jugar en casa, con un freno que equivale a 4 partidos neutros. Los partidos pendientes se juegan 10.000 veces con la dispersión real de los resultados de su grupo. El desempate usa victorias y diferencia de puntos; el reglamento aplica antes el enfrentamiento directo, así que en empates ajustados el puesto real puede variar. Validación: entrenado con las jornadas 1–5, acertó el 69 % de los partidos de las jornadas 6 y 7.</p>
+</section>
+<section id="tab-glosario" class="adv-panel" hidden><dl class="adv-glossary" id="glossary"></dl></section>
+</main>
+<footer><div class="frame">Primera Nacional masculina de Andalucía · 2026/27<br>Datos: <a href="https://play.google.com/store/apps/details?id=com.indalweb.aficionFAB">Afición FAB</a> · cálculo propio a partir de actas y jugada a jugada · <span id="advChecked"></span></div></footer>
+</body></html>

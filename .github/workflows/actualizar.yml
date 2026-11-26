@@ -1,0 +1,74 @@
+name: Actualizar datos de Afición FAB
+
+# Lunes 08:00 y fines de semana cada hora de 11:00 a 23:00 (hora de Madrid en invierno).
+on:
+  schedule:
+    - cron: "0 7 * * 1"
+    - cron: "0 10-22 * * 0,5,6"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: actualizar-fab
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # La sesión de invitado de Afición FAB se conserva entre ejecuciones en la caché
+      # de Actions (nunca en el repositorio), para no registrar un dispositivo nuevo cada vez.
+      - name: Recuperar sesión FAB
+        uses: actions/cache@v4
+        with:
+          path: captura-app/.sesion-fab.json
+          key: sesion-fab-${{ github.run_id }}
+          restore-keys: sesion-fab-
+
+      - name: Arrancar la web local de trabajo
+        working-directory: web-en-progreso
+        run: |
+          node scripts/build.mjs
+          nohup node dev/serve.mjs --seed > ../servidor.log 2>&1 &
+          for i in $(seq 1 30); do curl -s -o /dev/null http://localhost:8787/ && break; sleep 1; done
+
+      - name: Descargar calendario, actas y jugadas
+        working-directory: captura-app
+        run: python3 recolectar.py ../datos-fab-vivo
+
+      - name: Validar, cargar y calcular la estadística avanzada
+        working-directory: web-en-progreso
+        env:
+          N1_SITE: http://localhost:8787
+          N1_TOKEN_FILE: .fab-import-token-local
+          N1_PAUSA: "0"
+        run: |
+          mkdir -p ../salidas
+          python3 scripts/cargar-fab.py ../datos-fab-vivo --publicar
+          python3 scripts/avanzadas.py ../datos-fab-vivo ../salidas/avanzadas.json --sitio http://localhost:8787 --publicar
+
+      - name: Exportar la web estática
+        working-directory: web-en-progreso
+        run: node dev/exportar.mjs ../docs
+
+      - name: Publicar cambios
+        run: |
+          git config user.name "Actualización N1"
+          git config user.email "actions@users.noreply.github.com"
+          git add datos-fab-vivo docs
+          if git diff --cached --quiet; then echo "Sin cambios"; exit 0; fi
+          git commit -m "Datos Afición FAB $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push

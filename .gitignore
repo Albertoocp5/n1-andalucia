@@ -1,0 +1,17 @@
+# Credenciales y sesiones: nunca al repositorio
+captura-app/.sesion-fab.json
+web-en-progreso/.fab-import-token
+web-en-progreso/.fab-import-token-local
+.env
+# Se regeneran
+web-en-progreso/.local-bucket/
+web-en-progreso/dist/
+web-en-progreso/scripts/__pycache__/
+captura-app/__pycache__/
+# Material de análisis, pruebas y registros
+captura-app/apk/
+captura-app/muestras/
+registros/
+salidas/
+.DS_Store
+captura-app/deofuscar.mjs

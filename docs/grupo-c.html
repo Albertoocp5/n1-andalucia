@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+<head><script>(()=>{const f=window.fetch.bind(window),base=new URL('./',document.baseURI);
+const map=u=>{const x=new URL(u,location.href);if(x.origin!==location.origin)return null;const p=x.pathname,q=x.searchParams,id=q.get('partido');
+if(p.endsWith('/api/avanzadas'))return id?'api/avanzadas/partidos/'+id+'.json':q.has('tiros')?'api/avanzadas-tiros.json':'api/avanzadas.json';
+if(p.endsWith('/api/jugadas-fab'))return id?'api/jugadas/'+id+'.json':null;
+if(p.endsWith('/api/results-saved')||p.endsWith('/api/results'))return 'api/results-saved.json';
+if(p.endsWith('/api/sync-status'))return 'api/sync-status.json';
+if(p.endsWith('/api/pronosticos'))return 'api/pronosticos.json';
+if(p.endsWith('/api/articles'))return 'api/no-disponible.json';return null};
+window.fetch=(u,o)=>{const s=typeof u==='string'?u:u?.url;const m=s&&(!o||!o.method||o.method==='GET')?map(s):null;return f(m?new URL(m,base).href:u,o)}})();</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Clasificación, resultados y estadísticas de equipo de la Liga Nacional N1 Masculina de Andalucía, grupo C.">
+<title>Primera Nacional · Grupo C</title>
+<style>
+:root{color-scheme:dark;--bg:#111614;--panel:#1b2320;--line:#37423c;--muted:#b5c3b9;--accent:#e3fb83;--ink:#f5f7f1}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,sans-serif}
+header,main,footer{width:min(1060px,calc(100% - 2rem));margin:auto}
+header{padding:clamp(2.8rem,9vw,6rem) 0 2.2rem;background:repeating-linear-gradient(125deg,transparent 0 21px,#ffffff06 21px 22px);border-bottom:1px solid var(--line)}
+.label{color:var(--accent);font-weight:750;letter-spacing:.08em;text-transform:uppercase;font-size:.875rem}
+h1{font-size:clamp(2.7rem,8vw,6rem);letter-spacing:-.065em;line-height:.95;margin:.35em 0 .18em}h1 span{color:var(--accent)}
+p{margin:.5em 0;color:var(--muted)}nav{display:flex;gap:.65rem;flex-wrap:wrap;margin:1.2rem 0 2rem}a{color:var(--accent);text-underline-offset:3px}nav a{border:1px solid var(--line);border-radius:999px;padding:.55rem .9rem;text-decoration:none;background:var(--panel)}
+a:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,225px),1fr));gap:.75rem}.card,.table-wrap,.match,.players{background:var(--panel);border:1px solid var(--line);border-radius:.85rem}.card,.players{padding:1rem}.card strong{display:block;font-size:1.28rem;margin:.25rem 0}.card p{margin:0}
+section{margin:2.2rem 0;scroll-margin-top:1rem}h2{font-size:clamp(1.65rem,4vw,2.5rem);margin:0 0 .5rem;letter-spacing:-.035em}.table-wrap{overflow:auto;margin-top:1rem}table{width:100%;border-collapse:collapse;min-width:610px;font-variant-numeric:tabular-nums}th,td{padding:.75rem .7rem;border-bottom:1px solid var(--line);text-align:right}thead th{font-size:.875rem;color:var(--muted)}td:nth-child(2),th:nth-child(2){text-align:left}tbody th{color:var(--accent);width:2.7rem}tbody tr:last-child>*{border-bottom:0}.filters{display:flex;gap:.75rem;flex-wrap:wrap;margin:0 0 .75rem}.filters label{display:grid;gap:.3rem;min-width:0}.filters select{appearance:none;max-width:100%;color:var(--ink);background:var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='m1 1 5 5 5-5' fill='none' stroke='%23e3fb83' stroke-width='2'/%3E%3C/svg%3E") no-repeat right .9rem center;border:1px solid var(--line);border-radius:.5rem;padding:.65rem 2.2rem .65rem .7rem;font:inherit}
+.matches{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:.65rem}.match{padding:.85rem 1rem}.match small{color:var(--muted);font-size:.875rem}.team{display:flex;justify-content:space-between;gap:.7rem;margin-top:.3rem}.team strong{color:var(--accent);font-variant-numeric:tabular-nums}.venue{font-size:.875rem}
+footer{border-top:1px solid var(--line);padding:1rem 0 2rem;color:var(--muted)}
+</style>
+<script src="data.js" defer></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+<header><div class="label">Baloncesto andaluz · Temporada 2026/27</div><h1>Primera Nacional<br><span>Grupo C</span></h1><p>Liga Nacional N1 Masculina · Fase regular</p></header>
+<main>
+<nav aria-label="Secciones"><a href="andalucia.html">Estadísticas individuales · Grupos A–D</a><a href="#equipos">Equipos</a><a href="#partidos">Partidos</a><a href="#jugadores">Jugadores</a></nav>
+<div class="cards" id="summary" aria-label="Resumen del grupo"></div>
+<section id="equipos"><h2>Clasificación y estadísticas de equipo</h2><p>Datos consultados el 23 de noviembre de 2026. PF y PC son los puntos a favor y en contra.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Tabla de clasificación desplazable"><table><thead><tr><th scope="col">Pos.</th><th scope="col">Equipo</th><th scope="col"><abbr title="Partidos jugados">PJ</abbr></th><th scope="col"><abbr title="Victorias">V</abbr></th><th scope="col"><abbr title="Derrotas">D</abbr></th><th scope="col">PF</th><th scope="col">PC</th><th scope="col">Dif.</th><th scope="col">PF/PJ</th></tr></thead><tbody id="standings"></tbody></table></div></section>
+<section id="partidos"><h2>Partidos</h2>
+<div class="filters"><label>Equipo<select id="team"><option value="">Todos los equipos</option></select></label><label>Ver<select id="status"><option value="results">Resultados</option><option value="upcoming">Próximos partidos</option></select></label></div>
+<p id="count" aria-live="polite"></p><div class="matches" id="matches"></div>
+<p><a href="https://sportsevents24.com/tournament/125788/basketball-spain-fab-2026-2027-liga-nacional-n1-mas-regular-grupo-c">Consultar calendario completo</a></p></section>
+<section id="jugadores" class="players"><h2>Estadísticas de jugadores</h2><p>Consulta las estadísticas individuales de los partidos, con filtros por grupo y equipo y el historial disponible por jugador.</p><a href="andalucia.html">Consultar jugadores de los cuatro grupos</a></section>
+<noscript><p>Activa JavaScript para ver la tabla y filtrar los partidos.</p></noscript>
+</main><footer>Fuente de los datos de equipo: <a href="https://sportsevents24.com/tournament/125788/basketball-spain-fab-2026-2027-liga-nacional-n1-mas-regular-grupo-c?view=table">SportsEvents24</a></footer>
+</body></html>
