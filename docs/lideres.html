@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="es"><head><script>(()=>{const f=window.fetch.bind(window),base=new URL('./',document.baseURI);
+const map=u=>{const x=new URL(u,location.href);if(x.origin!==location.origin)return null;const p=x.pathname,q=x.searchParams,id=q.get('partido');
+if(p.endsWith('/api/avanzadas'))return id?'api/avanzadas/partidos/'+id+'.json':q.has('tiros')?'api/avanzadas-tiros.json':'api/avanzadas.json';
+if(p.endsWith('/api/jugadas-fab'))return id?'api/jugadas/'+id+'.json':null;
+if(p.endsWith('/api/results-saved')||p.endsWith('/api/results'))return 'api/results-saved.json';
+if(p.endsWith('/api/sync-status'))return 'api/sync-status.json';
+if(p.endsWith('/api/pronosticos'))return 'api/pronosticos.json';
+if(p.endsWith('/api/articles'))return 'api/no-disponible.json';return null};
+window.fetch=(u,o)=>{const s=typeof u==='string'?u:u?.url;const m=s&&(!o||!o.method||o.method==='GET')?map(s):null;return f(m?new URL(m,base).href:u,o)}})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#101e28"><meta name="description" content="Los mejores jugadores de cada estadística en la Primera Nacional masculina de Andalucía."><title>Líderes · N1 Andalucía</title><link rel="stylesheet" href="./portal.css"><link rel="stylesheet" href="./avanzada.css"><script type="module" src="./comun.js"></script><script type="module" src="./lideres.js"></script></head>
+<body>
+<header class="masthead"><div class="frame brandbar"><a class="brand" href="./"><span class="badge">N1</span><span>PRIMERA NACIONAL<small>ANDALUCÍA</small></span></a><span class="season">Temporada 2026/27</span></div>
+<nav class="frame mainnav" aria-label="Competición"></nav></header>
+<main class="frame">
+<section class="page-head"><div><small class="kicker">N1 MASCULINA</small><h1>Líderes</h1><p class="stamp" id="stamp"></p></div><div class="adv-filters"><label>Grupo<select id="grupo"><option value="">Toda la N1</option><option>A</option><option>B</option><option>C</option><option>D</option></select></label><label>Escala<select id="escala"><option value="pp">Por partido</option><option value="tot">Totales</option><option value="p40">Por 40 minutos</option></select></label></div></section>
+<p class="adv-note" id="nota"></p>
+<div class="leaders" id="lideres"></div>
+</main>
+<footer><div class="frame">Primera Nacional masculina de Andalucía · 2026/27<br>Datos: <a href="https://play.google.com/store/apps/details?id=com.indalweb.aficionFAB">Afición FAB</a> · cálculo propio a partir de actas y jugada a jugada · <a href="./avanzada.html?tab=glosario">Glosario</a></div></footer>
+</body></html>

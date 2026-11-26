@@ -111,3 +111,24 @@
 .proj-bar{display:grid;grid-template-rows:1.2rem 1fr 1.2rem;height:100%;text-align:center;font-size:.75rem}
 .proj-bar i{align-self:end;display:block;background:#154b40;border-radius:4px 4px 0 0;min-height:2px}
 .proj-bar span{color:var(--muted)}.proj-bar b{font-size:.8rem}
+.cmp-table td:first-child{white-space:normal;min-width:11rem}
+.cmp-table th .who{justify-items:end}.cmp-table th a{font-size:.95rem}
+.cmp-table tr.cmp-sec td{background:#f3f7f5;font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--green)}
+.cmp-table td.cmp-best b{color:#0f7a55}.cmp-table td.cmp-best{background:#eaf5ef}
+.cmp-rank{color:var(--muted);font-size:.75rem;display:block}
+.adv-table td.l{text-align:left}
+.pct-row{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 3.4rem 3.6rem}
+.pct-num small{font-weight:500;color:var(--muted);font-size:.72rem}
+.adv-card .tip{font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--green)}
+#plName .cmp-btn{font-size:.9rem;letter-spacing:0;vertical-align:middle;padding:.3rem .8rem;margin-left:1rem}
+.adv-glossary dd .how{display:block;margin-top:.2rem;font-size:.9em}.adv-glossary dd b{color:var(--ink)}
+.adv-card .rank-txt small{font-size:.78rem;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.adv-card .rank-ends{font-size:.66rem}
+.adv-table td{text-align:left}
+.adv-table th button.cmp-btn{display:inline-block;cursor:pointer;border:1px solid #b9cbc3;border-radius:999px;padding:0 .45rem;margin-left:.4rem;font-size:.85rem;line-height:1.4;color:var(--green);background:#fff}
+@media (max-width:860px){.adv-split{grid-template-columns:minmax(0,1fr)}}
+.adv-filters label{min-width:0;max-width:100%}.adv-filters select,.adv-filters input{max-width:100%}
+@media (max-width:640px){.pct-grid{grid-template-columns:minmax(0,1fr)}.pl-search input,.pl-search select{min-width:0;width:100%}.pl-search{width:100%}}
+.shot-side{grid-template-columns:minmax(0,1fr)}.shot-side>div{overflow-x:auto;min-width:0}
+.section-head>*{min-width:0;max-width:100%}
+@media (max-width:640px){.adv-filters label{width:100%}.adv-filters select,.adv-filters input:not([type=number]){width:100%}}

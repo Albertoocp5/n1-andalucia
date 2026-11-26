@@ -1,5 +1,6 @@
 import { drawCourt, zoneTable, fromRow } from './tiros.js';
-import { GLOSSARY } from './glosario.js';
+import { TERMS } from './glosario.js';
+import { jugador as pn, equipo as eq, botonComparar } from './comun.js';
 import { simulate, winProb } from './simulador.js';
 const $ = s => document.querySelector(s);
 const el = (tag, text, cls) => { const e = document.createElement(tag); if (text != null) e.textContent = text; if (cls) e.className = cls; return e; };
@@ -7,8 +8,6 @@ const nf = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 1, minimumFra
 const fmt = (v, d = 1) => v == null || !Number.isFinite(v) ? '—' : new Intl.NumberFormat('es-ES', { maximumFractionDigits: d, minimumFractionDigits: d }).format(v);
 const signed = v => v == null ? '—' : (v > 0 ? '+' : '') + fmt(v);
 
-
-const tip = label => GLOSSARY[label] || '';
 
 let data, tab = 'equipos';
 const state = { sortTeam: ['net', -1], sortPlayer: ['pts', -1], sortLineup: ['min', -1], sortClutch: ['pts', -1] };
@@ -20,7 +19,7 @@ function table(container, columns, rows, sortKey, onSort, rowLink) {
     const th = el('th');
     const b = el('button', c.label);
     b.type = 'button';
-    if (tip(c.tip || c.label)) { b.title = tip(c.tip || c.label); b.classList.add('has-tip'); }
+    if (c.tip) b.dataset.tip = c.tip;
     if (sortKey && sortKey[0] === c.key) th.setAttribute('aria-sort', sortKey[1] < 0 ? 'descending' : 'ascending');
     if (c.key && onSort) b.onclick = () => onSort(c.key);
     else b.disabled = true;
@@ -71,7 +70,7 @@ function renderTeams() {
   const cards = [['Mejor ataque', best('off'), 'off', 'Ataque'], ['Mejor defensa', best('def', false), 'def', 'Defensa'], ['Mejor Net', best('net'), 'net', 'Net'], ['Más ritmo', best('ritmo'), 'ritmo', 'Ritmo']];
   $('#teamCards').replaceChildren(...cards.filter(c => c[1]).map(([title, t, k, label]) => {
     const card = el('article', null, 'adv-card');
-    const tl = el('a', t.equipo); tl.href = './equipo.html?n=' + encodeURIComponent(t.equipo);
+    const tl = el('a', eq(t.equipo)); tl.href = './equipo.html?n=' + encodeURIComponent(t.equipo);
     card.append(el('small', title), el('strong', k === 'net' ? signed(t[k]) : fmt(t[k])), tl, el('em', label + ' · grupo ' + t.grupo));
     return card;
   }));
@@ -79,7 +78,7 @@ function renderTeams() {
   const h = { off: heat(rows, 'off'), def: heat(rows, 'def', false), net: heat(rows, 'net'), efg: heat(rows, 'efg'), ts: heat(rows, 'ts'), tov: heat(rows, 'tov', false), orb: heat(rows, 'orb'), ftr: heat(rows, 'ftr') };
   table($('#teamTable'), [
     { label: '#', get: (r, i) => i + 1 },
-    { label: 'Equipo', key: 'equipo', get: r => { const a = el('a', r.equipo); a.href = './equipo.html?n=' + encodeURIComponent(r.equipo); return a; } },
+    { label: 'Equipo', key: 'equipo', get: r => { const w = el('span'); const a = el('a', eq(r.equipo)); a.href = './equipo.html?n=' + encodeURIComponent(r.equipo); w.append(a, botonComparar({ t: 'e', id: r.equipo, nombre: eq(r.equipo) })); return w; } },
     { label: 'Gr.', key: 'grupo' }, { label: 'Bal.', key: 'v', get: r => r.balance, num: true },
     { label: 'Ataque', key: 'off', num: true, fmt: v => fmt(v), heat: h.off },
     { label: 'Defensa', key: 'def', num: true, fmt: v => fmt(v), heat: h.def },
@@ -117,9 +116,9 @@ function scatter(teams) {
   for (const t of teams) {
     const g = add('g', { class: 'dot g' + t.grupo, tabindex: 0 });
     const c = document.createElementNS(ns, 'circle'); c.setAttribute('cx', X(t.off)); c.setAttribute('cy', Y(t.def)); c.setAttribute('r', 6);
-    const ti = document.createElementNS(ns, 'title'); ti.textContent = `${t.equipo} (grupo ${t.grupo}) · Ataque ${fmt(t.off)} · Defensa ${fmt(t.def)} · Net ${signed(t.net)}`;
+    const ti = document.createElementNS(ns, 'title'); ti.textContent = `${eq(t.equipo)} (grupo ${t.grupo}) · Ataque ${fmt(t.off)} · Defensa ${fmt(t.def)} · Net ${signed(t.net)}`;
     g.append(c, ti);
-    if (teams.length <= 12) { const lb = document.createElementNS(ns, 'text'); lb.setAttribute('x', X(t.off) + 8); lb.setAttribute('y', Y(t.def) + 4); lb.setAttribute('class', 'dot-label'); lb.textContent = t.equipo.split(' ').slice(-2).join(' '); g.append(lb); }
+    if (teams.length <= 12) { const lb = document.createElementNS(ns, 'text'); lb.setAttribute('x', X(t.off) + 8); lb.setAttribute('y', Y(t.def) + 4); lb.setAttribute('class', 'dot-label'); lb.textContent = eq(t.equipo).split(' ').slice(-2).join(' '); g.append(lb); }
   }
   const legend = el('div', null, 'adv-legend');
   for (const g of 'ABCD') { const s = el('span', 'Grupo ' + g, 'g' + g); legend.append(s); }
@@ -155,12 +154,12 @@ function renderPlayers() {
   rows.sort(sorter(state.sortPlayer));
   lastPlayers = rows;
   const heats = Object.fromEntries(cols.map(([k]) => [k, heat(rows, k, !['tov', 'def'].includes(k))]));
-  $('#playerNote').textContent = rows.length + ' jugadores con ' + min + ' minutos o más. Pasa el ratón por las cabeceras para ver cada definición.';
+  $('#playerNote').textContent = rows.length + ' jugadores con ' + min + ' minutos o más. Pasa el ratón (o toca) una cabecera subrayada para ver qué significa y cómo se calcula. Pulsa + para añadir al comparador.';
   table($('#playerTable'), [
     { label: '#', get: (r, i) => i + 1 },
-    { label: 'Jugador', key: 'nombre', get: r => { const a = el('a', r.nombre); a.href = './jugador.html?id=' + encodeURIComponent(r.id); const s = el('small', r.equipo + ' · ' + r.grupo); const w = el('span', null, 'who'); w.append(a, s); return w; } },
+    { label: 'Jugador', key: 'nombre', get: r => { const a = el('a', pn(r.nombre)); a.href = './jugador.html?id=' + encodeURIComponent(r.id); const top = el('span'); top.append(a, botonComparar({ t: 'j', id: r.id, nombre: pn(r.nombre) })); const s = el('small', eq(r.equipo) + ' · ' + r.grupo); const w = el('span', null, 'who'); w.append(top, s); return w; } },
     ...cols.map(([k, label]) => ({
-      key: k, label, tip: label === 'PÉR' ? 'TOV%' : label, num: true,
+      key: k, label, tip: label, num: true,
       fmt: v => k === 'pm' || k === 'net' || k === 'onoff' || k === 'netSin' ? signed(v) : (Number.isInteger(v) && !PCT.has(k) ? String(v) : fmt(v)),
       heat: ['pj', 'tit', 'min', 'mpp', 'pos'].includes(k) ? null : heats[k],
     })),
@@ -172,8 +171,8 @@ function renderLineups() {
   const rows = filtered(data.quintetos.map(l => ({ ...l, grupo: teamGroup[l.equipo] }))).filter(l => l.min >= min).sort(sorter(state.sortLineup));
   const h = heat(rows, 'net');
   table($('#lineupTable'), [
-    { label: 'Equipo', key: 'equipo', get: r => { const a = el('a', r.equipo, 'team-tag'); a.href = './equipo.html?n=' + encodeURIComponent(r.equipo); return a; } },
-    { label: 'Quinteto', get: r => el('span', r.jug.map(n => n.split(',')[0]).join(' · '), 'lineup') },
+    { label: 'Equipo', key: 'equipo', get: r => { const a = el('a', eq(r.equipo), 'team-tag'); a.href = './equipo.html?n=' + encodeURIComponent(r.equipo); return a; } },
+    { label: 'Quinteto', get: r => el('span', r.jug.map(n => pn(n).split(' ').slice(-2).join(' ')).join(' · '), 'lineup') },
     { label: 'MIN', key: 'min', num: true, fmt: v => fmt(v) }, { label: 'Pos.', key: 'pos', num: true, fmt: v => fmt(v, 0) },
     { label: '+/-', key: 'pm', num: true, fmt: v => signed(v) },
     { label: 'Ataque', key: 'off', num: true, fmt: v => fmt(v) }, { label: 'Defensa', key: 'def', num: true, fmt: v => fmt(v) },
@@ -188,7 +187,7 @@ function renderClutch() {
   rows.sort(sorter(st));
   table($('#clutchTable'), [
     { label: '#', get: (r, i) => i + 1 },
-    { label: 'Jugador', key: 'nombre', get: r => { const w = el('span', null, 'who'); const a = el('a', r.nombre); a.href = './jugador.html?id=' + encodeURIComponent(r.id); w.append(a, el('small', r.equipo)); return w; } },
+    { label: 'Jugador', key: 'nombre', get: r => { const w = el('span', null, 'who'); const a = el('a', pn(r.nombre)); a.href = './jugador.html?id=' + encodeURIComponent(r.id); w.append(a, el('small', eq(r.equipo))); return w; } },
     { label: 'PTS', key: 'cpts', num: true, tip: 'Clutch' }, { label: 'TC', key: 'cpct', num: true, get: r => r.cfg },
     { label: 'TC%', key: 'cpct', num: true, fmt: v => fmt(v) }, { label: 'PÉR', key: 'ctov', num: true },
   ], rows.slice(0, 150), st, k => { state.sortClutch = [k, state.sortClutch[0] === k ? -state.sortClutch[1] : -1]; render(); });
@@ -204,13 +203,13 @@ async function renderShots() {
   }
   const players = data.jugadores.filter(p => p.equipo === team).sort((a, b) => b.fga - a.fga);
   const keep = $('#shotPlayer').value;
-  $('#shotPlayer').replaceChildren(new Option('Todo el equipo', ''), ...players.filter(p => p.fga).map(p => new Option(`${p.nombre} (${p.fga} TC)`, p.id)));
+  $('#shotPlayer').replaceChildren(new Option('Todo el equipo', ''), ...players.filter(p => p.fga).map(p => new Option(`${pn(p.nombre)} (${p.fga} TC)`, p.id)));
   if (players.some(p => p.id === keep)) $('#shotPlayer').value = keep;
   const pid = $('#shotPlayer').value, type = Number($('#shotType').value) || 0;
   const idx = pid ? shotData.jugadores.indexOf(pid) : -1;
   const rows = (shotData.equipos[team] || []).filter(r => (!pid || r[4] === idx) && (!type || r[2] === type));
-  const who = pid ? players.find(p => p.id === pid).nombre : team;
-  $('#shotNote').textContent = (!$('#equipo').value ? 'Mostrando ' + team + '. Cambia de equipo con el selector de arriba. ' : '') + rows.length + ' tiros de campo con posición.';
+  const who = pid ? pn(players.find(p => p.id === pid).nombre) : eq(team);
+  $('#shotNote').textContent = (!$('#equipo').value ? 'Mostrando ' + eq(team) + '. Cambia de equipo con el selector de arriba. ' : '') + rows.length + ' tiros de campo con posición.';
   $('#shotCourt').replaceChildren();
   drawCourt($('#shotCourt'), rows.map(fromRow), { title: who, label: 'Mapa de tiro de ' + who });
   $('#shotZones').replaceChildren();
@@ -237,9 +236,9 @@ async function renderSim() {
   for (const r of sim.rows) {
     const tr = el('tr'); if (r.equipo === focus) tr.className = 'sim-focus';
     const top4 = r.pos.slice(0, 4).reduce((a, b) => a + b, 0), last2 = r.pos.slice(-2).reduce((a, b) => a + b, 0);
-    const tl = el('a', r.equipo); tl.href = './equipo.html?n=' + encodeURIComponent(r.equipo); const tcell = el('td'); tcell.append(tl);
+    const tl = el('a', eq(r.equipo)); tl.href = './equipo.html?n=' + encodeURIComponent(r.equipo); const tcell = el('td'); tcell.append(tl);
     tr.append(tcell, ...[r.w + '–' + r.l, signed(r.rating), fmt(r.vEsp), fmt(r.pEsp), pc(r.pos[0]), pc(top4), pc(last2)].map(v => el('td', v, 'num')));
-    r.pos.forEach((p, i) => { const td = el('td', p >= 0.01 ? String(Math.round(100 * p)) : '', 'num heat-cell'); td.style.setProperty('--p', p.toFixed(3)); if (p > 0.5) td.style.color = '#fff'; td.title = `${r.equipo}: ${pc(p)} de acabar ${i + 1}.º`; tr.append(td); });
+    r.pos.forEach((p, i) => { const td = el('td', p >= 0.01 ? String(Math.round(100 * p)) : '', 'num heat-cell'); td.style.setProperty('--p', p.toFixed(3)); if (p > 0.5) td.style.color = '#fff'; td.title = `${eq(r.equipo)}: ${pc(p)} de acabar ${i + 1}.º`; tr.append(td); });
     body.append(tr);
   }
   t.append(thead, body);
@@ -254,7 +253,7 @@ async function renderSim() {
     const p = winProb(sim.model, x.home, x.away), m = sim.model.home + sim.model.ratings.get(x.home) - sim.model.ratings.get(x.away);
     const tr = el('tr');
     const fecha = new Date(x.date + 'T12:00').toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' }) + ' ' + (x.time || '');
-    tr.append(el('td', fecha), el('td', x.round || ''), el('td', x.home, p >= .5 ? 'fav' : ''), el('td', Math.round(100 * p) + ' %', 'num'), el('td', x.away, p < .5 ? 'fav' : ''), el('td', (m >= 0 ? x.home.split(' ').slice(-1)[0] + ' +' : x.away.split(' ').slice(-1)[0] + ' +') + fmt(Math.abs(m)), 'num'));
+    tr.append(el('td', fecha), el('td', x.round || ''), el('td', eq(x.home), p >= .5 ? 'fav' : ''), el('td', Math.round(100 * p) + ' %', 'num'), el('td', eq(x.away), p < .5 ? 'fav' : ''), el('td', (m >= 0 ? eq(x.home).split(' ').slice(-1)[0] + ' +' : eq(x.away).split(' ').slice(-1)[0] + ' +') + fmt(Math.abs(m)), 'num'));
     nb.append(tr);
   }
   nt.append(nb);
@@ -262,7 +261,11 @@ async function renderSim() {
 }
 
 function renderGlossary() {
-  $('#glossary').replaceChildren(...Object.entries(GLOSSARY).flatMap(([k, v]) => [el('dt', k), el('dd', v)]));
+  $('#glossary').replaceChildren(...Object.entries(TERMS).flatMap(([k, [name, what, how, dir]]) => {
+    const dd = el('dd'); dd.append(el('b', name === k ? '' : name + '. '), document.createTextNode(what + ' '));
+    const c = el('span', null, 'how'); c.append(el('i', 'Cómo se calcula: '), document.createTextNode(how + (dir ? (dir === '+' ? ' Más alto es mejor.' : ' Más bajo es mejor.') : ''))); dd.append(c);
+    return [el('dt', k), dd];
+  }));
 }
 
 let teamGroup = {};
@@ -275,7 +278,7 @@ function render() {
 function fillTeams() {
   const g = $('#grupo').value, keep = $('#equipo').value;
   const names = data.equipos.filter(t => !g || t.grupo === g).map(t => t.equipo).sort((a, b) => a.localeCompare(b, 'es'));
-  $('#equipo').replaceChildren(new Option('Todos', ''), ...names.map(n => new Option(n, n)));
+  $('#equipo').replaceChildren(new Option('Todos', ''), ...names.map(n => new Option(eq(n), n)));
   if (names.includes(keep)) $('#equipo').value = keep;
 }
 
