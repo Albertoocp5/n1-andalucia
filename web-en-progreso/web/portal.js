@@ -50,11 +50,12 @@ function drawGame(game){
   const meta=make('small',pretty(game.date)+' · '+game.time+' · ');meta.append(make('span',state,'st st-'+(game.status==='Final'?'fin':game.status==='En juego'?'live':'prev')));
   if(moved)meta.append(make('span',' · fecha cambiada','moved'));
   b.append(meta);
-  const sc=game.liveScore||game.score;
-  [game.home,game.away].forEach((team,i)=>{
-    const line=make('div',null,'teamline'+(sc&&game.status==='Final'&&sc[i]>sc[1-i]?' won':''));
-    line.append(make('span',eq(team)),make('b',sc?.[i]??''));b.append(line);
-  });
+  const sc=game.liveScore||game.score,win=i=>sc&&game.status==='Final'&&sc[i]>sc[1-i];
+  const row=make('div',null,'g-row');
+  const mid=make('span',null,'g-score');
+  if(sc){mid.append(make('b',String(sc[0]),win(0)?'w':''),document.createTextNode(' – '),make('b',String(sc[1]),win(1)?'w':''))}else mid.append(make('b',game.time,'t'));
+  row.append(make('span',eq(game.home),'g-home'+(win(0)?' w':'')),mid,make('span',eq(game.away),'g-away'+(win(1)?' w':'')));
+  b.append(row);
   return b;
 }
 function renderBoard(){

@@ -46,29 +46,98 @@ export function muestra(jugadores) {
 }
 export const tierPuesto = r => !r ? '' : r.pos / r.n <= 0.1 ? 't-top' : r.pos / r.n <= 0.3 ? 't-good' : r.pos / r.n <= 0.7 ? 't-mid' : r.pos / r.n <= 0.9 ? 't-low' : 't-bottom';
 
-// ---------- Menú ----------
+// ---------- Cabecera ----------
+// Fila superior: logo, enlaces, buscador, modo, comparador, tema y ayuda.
+// Debajo, «Estás viendo» con las secciones de la competición. En móvil, barra inferior.
+const TOP = [
+  ['Inicio', '/index.html', p => p.endsWith('/') || p.endsWith('index.html')],
+  ['Comparar', '/comparar.html'],
+  ['Glosario', '/avanzada.html?tab=glosario', (p, q) => q.get('tab') === 'glosario'],
+];
 const NAV = [
-  ['Jornada', '/index.html', p => p.endsWith('/') || p.endsWith('index.html')],
+  ['Jornadas', '/index.html', p => p.endsWith('/') || p.endsWith('index.html')],
   ['Clasificación', '/clasificacion.html'],
   ['Líderes', '/lideres.html'],
   ['Jugadores', '/avanzada.html?tab=jugadores', (p, q) => p.endsWith('jugador.html') || p.endsWith('avanzada.html') && q.get('tab') === 'jugadores'],
   ['Equipos', '/avanzada.html?tab=equipos', (p, q) => p.endsWith('equipo.html') || p.endsWith('avanzada.html') && q.get('tab') === 'equipos'],
-  ['Comparar', '/comparar.html'],
-  ['Estadística avanzada', '/avanzada.html', (p, q) => p.endsWith('avanzada.html') && !['jugadores', 'equipos', 'simulador', 'glosario'].includes(q.get('tab'))],
-  ['Simulador', '/avanzada.html?tab=simulador', (p, q) => q.get('tab') === 'simulador'],
-  ['Laboratorio', '/liga.html', p => p.endsWith('liga.html') || p.endsWith('andalucia.html')],
-  ['Glosario', '/avanzada.html?tab=glosario', (p, q) => q.get('tab') === 'glosario'],
+  ['Estadística avanzada', '/avanzada.html', (p, q) => p.endsWith('avanzada.html') && !['jugadores', 'equipos', 'simulador', 'glosario'].includes(q.get('tab')), 1],
+  ['Simulador', '/avanzada.html?tab=simulador', (p, q) => q.get('tab') === 'simulador', 1],
+  ['Laboratorio', '/liga.html', p => p.endsWith('liga.html') || p.endsWith('andalucia.html'), 1],
 ];
-function renderNav() {
-  const nav = document.querySelector('.mainnav');
-  if (!nav) return;
+const BOTTOM = [
+  ['Inicio', '/index.html', p => p.endsWith('/') || p.endsWith('index.html')],
+  ['Clasificación', '/clasificacion.html'],
+  ['Líderes', '/lideres.html'],
+  ['Comparar', '/comparar.html'],
+];
+function links(list) {
   const p = location.pathname, q = new URLSearchParams(location.search);
-  nav.replaceChildren(...NAV.map(([label, href, match]) => {
+  return list.map(([label, href, match, ana]) => {
     const a = el('a', label); a.href = href;
     if (match ? match(p, q) : p.endsWith(href.split('/').pop())) a.setAttribute('aria-current', 'page');
-    if (['Estadística avanzada', 'Simulador', 'Laboratorio'].includes(label)) a.classList.add('solo-ana');
+    if (ana) a.classList.add('solo-ana');
     return a;
-  }));
+  });
+}
+// Tema claro / oscuro
+const setTheme = t => { document.documentElement.dataset.theme = t; store.set('n1-tema', t); const b = document.querySelector('.theme-btn'); if (b) { b.textContent = t === 'dark' ? '☀' : '☾'; b.setAttribute('aria-label', t === 'dark' ? 'Modo claro' : 'Modo oscuro'); } };
+document.documentElement.dataset.theme = store.get('n1-tema', 'light');
+// Buscador global (jugadores y equipos)
+let searchData = null;
+function globalSearch() {
+  const box = el('div', null, 'gsearch');
+  const input = el('input'); input.type = 'search'; input.placeholder = 'Buscar jugador o equipo'; input.setAttribute('aria-label', 'Buscar jugador o equipo');
+  const out = el('div', null, 'gs-results');
+  const norm = s => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+  input.addEventListener('focus', () => { searchData ||= fetch('/api/avanzadas').then(r => r.ok ? r.json() : null).catch(() => null); });
+  input.addEventListener('input', async () => {
+    const words = norm(input.value.trim()).split(/\s+/).filter(Boolean);
+    if (!words.length) { out.replaceChildren(); return; }
+    const d = await (searchData ||= fetch('/api/avanzadas').then(r => r.ok ? r.json() : null).catch(() => null));
+    if (!d) return;
+    const hit = s => words.every(w => norm(s).includes(w));
+    const teams = d.equipos.filter(t => hit(t.equipo)).slice(0, 4).map(t => { const a = el('a'); a.href = '/equipo.html?n=' + encodeURIComponent(t.equipo); a.append(el('b', equipo(t.equipo)), el('small', 'Equipo · grupo ' + t.grupo)); return a; });
+    const players = d.jugadores.filter(p => hit(p.nombre)).sort((a, b) => b.min - a.min).slice(0, 8).map(p => { const a = el('a'); a.href = '/jugador.html?id=' + encodeURIComponent(p.id); a.append(el('b', jugador(p.nombre)), el('small', equipo(p.equipo) + ' · grupo ' + p.grupo)); return a; });
+    out.replaceChildren(...teams, ...players);
+    if (!teams.length && !players.length) out.append(el('p', 'Sin resultados.'));
+  });
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') out.querySelector('a')?.click(); if (e.key === 'Escape') { input.value = ''; out.replaceChildren(); } });
+  document.addEventListener('click', e => { if (!box.contains(e.target)) out.replaceChildren(); });
+  box.append(input, out);
+  return box;
+}
+function renderHeader() {
+  const head = document.querySelector('header.masthead');
+  if (!head || head.dataset.done) return;
+  head.dataset.done = '1';
+  const top = el('div', null, 'frame topbar');
+  const brand = el('a', null, 'brand'); brand.href = '/index.html';
+  brand.append(el('span', 'N1', 'logo'), el('span', 'N1 Andalucía'), el('span', 'BETA', 'tag'));
+  const tnav = el('nav', null, 'topnav'); tnav.setAttribute('aria-label', 'Principal'); tnav.append(...links(TOP));
+  const box = el('div', null, 'modo-switch'); box.setAttribute('role', 'group'); box.setAttribute('aria-label', 'Modo de vista');
+  for (const [m, label, tipText] of [['aficionado', 'Aficionado', 'Resultados, clasificación, líderes y lo básico de cada jugador y equipo.'], ['analista', 'Analista', 'Todas las métricas: ratings, cuatro factores, quintetos, impacto en pista y simulador.']]) {
+    const b = el('button', label); b.type = 'button'; b.dataset.m = m; b.dataset.tipText = tipText;
+    b.setAttribute('aria-pressed', String(modo() === m)); b.onclick = () => setModo(m);
+    box.append(b);
+  }
+  const cmp = el('a', null, 'head-btn cmp-head'); cmp.href = '/comparar.html'; cmp.append(document.createTextNode('⇄ Comparador '), el('b', String(comparados().length)));
+  const theme = el('button', null, 'head-btn theme-btn'); theme.type = 'button'; theme.onclick = () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+  top.append(brand, tnav, globalSearch(), box, cmp, theme);
+  const wrap = el('div', null, 'frame league-wrap'), bar = el('div', null, 'league-bar');
+  const info = el('div', null, 'lb-top');
+  info.append(el('span', 'Estás viendo', 'lb-k'), el('b', 'Primera Nacional Andalucía'), el('span', '· 2026/27'), el('span', '● En curso', 'lb-live'), el('span', '· Grupos A, B, C y D', 'lb-k'));
+  const nav = el('nav', null, 'mainnav'); nav.setAttribute('aria-label', 'Competición'); nav.append(...links(NAV));
+  bar.append(info, nav); wrap.append(bar);
+  head.replaceChildren(top, wrap);
+  const bottom = el('nav', null, 'bottom-nav'); bottom.setAttribute('aria-label', 'Accesos rápidos'); bottom.append(...links(BOTTOM));
+  document.body.append(bottom);
+  setTheme(document.documentElement.dataset.theme);
+  window.addEventListener('n1-comparar', () => {
+    const n = String(comparados().length);
+    cmp.querySelector('b').textContent = n;
+    const c = bottom.querySelector('a[href$="comparar.html"]'); c.querySelector('b')?.remove(); if (n !== '0') c.append(el('b', n));
+  });
+  window.dispatchEvent(new CustomEvent('n1-comparar'));
 }
 
 // ---------- Modo Aficionado / Analista ----------
@@ -81,19 +150,9 @@ function setModo(m) {
 }
 document.documentElement.dataset.modo = store.get('n1-modo', 'analista');
 function renderModo() {
-  const bar = document.querySelector('.brandbar');
-  if (!bar || bar.querySelector('.modo-switch')) return;
-  const box = el('div', null, 'modo-switch'); box.setAttribute('role', 'group'); box.setAttribute('aria-label', 'Modo de vista');
-  for (const [m, label, tipText] of [['aficionado', 'Aficionado', 'Resultados, clasificación, líderes y lo básico de cada jugador y equipo.'], ['analista', 'Analista', 'Todas las métricas: ratings, cuatro factores, quintetos, impacto en pista y simulador.']]) {
-    const b = el('button', label); b.type = 'button'; b.dataset.m = m; b.dataset.tipText = tipText;
-    b.setAttribute('aria-pressed', String(modo() === m)); b.onclick = () => setModo(m);
-    box.append(b);
-  }
-  bar.querySelector('.season')?.remove();
-  bar.append(box);
   if (store.get('n1-modo', null) == null) {
     const d = el('dialog', null, 'modo-dialog');
-    d.append(el('h2', '¿Cómo quieres ver la web?'), el('p', 'Puedes cambiarlo cuando quieras arriba a la derecha.', 'adv-note'));
+    d.append(el('h2', '¿Cómo quieres ver N1 Andalucía?'), el('p', 'Puedes cambiarlo cuando quieras desde la cabecera.', 'adv-note'));
     const opts = el('div', null, 'modo-opts');
     for (const [m, t, s] of [['aficionado', 'Aficionado', 'Resultados, clasificación, líderes y fichas con lo básico, de un vistazo.'], ['analista', 'Analista', 'Para cuerpo técnico: todas las métricas, quintetos, mapas de tiro, impacto y simulador.']]) {
       const b = el('button', null, 'modo-opt'); b.type = 'button';
@@ -206,7 +265,8 @@ export function botonComparar(item, conTexto = false) {
 function renderCmpBar() {
   let bar = document.querySelector('.cmp-bar');
   const list = comparados();
-  if (location.pathname.endsWith('comparar.html') || !list.length) { bar?.remove(); return; }
+  // El contador está en la cabecera (y en la barra inferior en móvil): no hay barra flotante.
+  bar?.remove(); if (true) return;
   if (!bar) { bar = el('div', null, 'cmp-bar'); document.body.append(bar); }
   const a = el('a', 'Comparar ' + list.length + ' ' + (list[0].t === 'j' ? (list.length > 1 ? 'jugadores' : 'jugador') : (list.length > 1 ? 'equipos' : 'equipo')) + ' →');
   a.href = '/comparar.html';
@@ -215,5 +275,5 @@ function renderCmpBar() {
 }
 
 // ---------- Arranque ----------
-function boot() { renderNav(); renderModo(); renderCmpBar(); annotate(); }
+function boot() { renderHeader(); renderModo(); renderCmpBar(); annotate(); }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
