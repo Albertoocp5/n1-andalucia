@@ -1,5 +1,6 @@
 import {initScout} from './scouting.js';
 import {equipo as eq, jugador as pn, botonComparar, escudo} from './comun.js';
+import {hayQueSeguir, consultar, jugadas as jugadasDirecto} from './directo.js';
 const $ = selector => document.querySelector(selector);
 const make = (tag,text,cls) => {
   const node=document.createElement(tag);
@@ -36,7 +37,8 @@ function renderControls(){
   $('#prevRound').disabled=i<=0;$('#nextRound').disabled=i>=rounds.length-1;
   $('#prevRound').onclick=()=>{week=rounds[i-1];render()};$('#nextRound').onclick=()=>{week=rounds[i+1];render()};
   const done=games.filter(g=>g.round===week),fin=done.filter(g=>g.status==='Final').length;
-  $('#roundState').textContent=fin===done.length?'Jornada terminada · '+fin+' partidos':fin?fin+' de '+done.length+' partidos terminados':'Sin empezar · '+done.length+' partidos';
+  const vivos=done.filter(g=>g.status==='En juego').length;
+  $('#roundState').textContent=(fin===done.length?'Jornada terminada · '+fin+' partidos':fin?fin+' de '+done.length+' partidos terminados':vivos?done.length+' partidos':'Sin empezar · '+done.length+' partidos')+(vivos?' · '+vivos+' en juego ahora':'');
   const tabs=['',...groups].map(g=>{const b=action(g?'Grupo '+g:'Todos',()=>{activeGroup=g;render()});b.setAttribute('aria-pressed',String(activeGroup===g));return b});
   $('#groupTabs').replaceChildren(...tabs);
 }
@@ -48,6 +50,7 @@ function drawGame(game){
   const md=mainDate.get(game.round),moved=md&&Math.abs(Date.parse(game.date)-Date.parse(md))>3*864e5;
   const state=game.status==='En juego'?'● En juego':game.status==='Final'?'Final':game.status==='Programado'?'Previa':game.status;
   const meta=make('small',pretty(game.date)+' · '+game.time+' · ');meta.append(make('span',state,'st st-'+(game.status==='Final'?'fin':game.status==='En juego'?'live':'prev')));
+  if(game.status==='En juego'&&clocks.get(game.url))meta.append(make('span',' · '+clocks.get(game.url),'live-clock'));
   if(moved)meta.append(make('span',' · fecha cambiada','moved'));
   b.append(meta);
   const sc=game.liveScore||game.score,win=i=>sc&&game.status==='Final'&&sc[i]>sc[1-i];
@@ -59,7 +62,22 @@ function drawGame(game){
   b.append(row);
   return b;
 }
+// Cuarto y reloj de los partidos en juego, sacados de la última jugada registrada.
+const clocks=new Map();
+async function loadClocks(){
+  await Promise.all(games.filter(g=>g.status==='En juego'&&!directoDe(g)).map(async g=>{
+    try{
+      const id=g.url.split('?')[0].split('/').at(-1);
+      const r=await fetch('./api/jugadas-fab?partido='+encodeURIComponent(id));if(!r.ok)return;
+      const e=((await r.json()).events||[]).at(-1);if(!e)return;
+      const per=Number(e[1]),q=per>4?'prórroga'+(per>5?' '+(per-4):''):per+'.º cuarto',t=String(e[2]||'').slice(3,8);
+      clocks.set(g.url,e[3]==='FINAL-PERIODO'?(per===2?'descanso':'fin del '+q):q+(t&&t!=='10:00'?' · quedan '+t:''));
+    }catch{}
+  }));
+}
 function renderBoard(){
+  const live=games.filter(g=>g.status==='En juego').sort((a,b)=>a.group.localeCompare(b.group));
+  const liveBlock=live.length?(()=>{const b=make('div',null,'block live-block');const h=make('div','● EN DIRECTO','group-head');h.append(make('small',live.length+(live.length>1?' partidos':' partido')+' · se actualiza solo'));b.append(h,...live.map(drawGame));return b})():null;
   const blocks=(activeGroup?[activeGroup]:groups).map(group=>{
     const rows=weekGames(week,group),block=make('div',null,'block');
     const head=make('div','GRUPO '+group,'group-head');
@@ -68,7 +86,7 @@ function renderBoard(){
     const more=make('a','Clasificación del grupo '+group+' →','group-link');more.href='./clasificacion.html?grupo='+group;block.append(more);
     return block;
   });
-  $('#board').replaceChildren(...blocks);
+  $('#board').replaceChildren(...(liveBlock?[liveBlock]:[]),...blocks);
 }
 const fieldNames=['MIN','PTS','T2','T3','TL','REB','AST','ROB','PER','TAP','FC','FR','+/−','VAL'];
 function leaderText(game){
@@ -121,9 +139,11 @@ async function showFabTimeline(game,section){
   const id=game.url?.split('?')[0].split('/').at(-1);
   if(!id)return;
   try{
-    const response=await fetch('./api/jugadas-fab?partido='+encodeURIComponent(id));
-    if(!response.ok)return;
-    const {events,status,checkedAt}=await response.json();
+    const vivo=directoDe(game);
+    let datos;
+    if(vivo)datos=await jugadasDirecto(vivo).catch(()=>null);
+    if(!datos){const response=await fetch('./api/jugadas-fab?partido='+encodeURIComponent(id));if(!response.ok)return;datos=await response.json()}
+    const {events,status,checkedAt}=datos;
     const title=make('h3','Jugada a jugada');
     const control=make('label','Periodo ');
     const rounds=[...new Set(events.map(event=>event[1]))].sort((a,b)=>b-a);
@@ -134,8 +154,8 @@ async function showFabTimeline(game,section){
     const wrap=make('div',null,'table-wrap'), table=make('table');
     wrap.append(table);
     const stamp=checkedAt?new Date(checkedAt).toLocaleString('es-ES',{timeZone:'Europe/Madrid',dateStyle:'short',timeStyle:'medium'}):'';
-    section.append(title,make('p',events.length+' acciones · Afición FAB · '+(status==='Final'?'secuencia final':'parcial, partido en juego')+(stamp?' · actualizado '+stamp:'')),control,wrap);
-    if(status==='En juego')setTimeout(()=>{if(section.isConnected&&$('#matchDialog').open){section.replaceChildren();showFabTimeline(game,section)}},30000);
+    section.append(title,make('p',events.length+' acciones · Afición FAB · '+(status==='Final'?'secuencia final':(vivo?'en directo':'parcial, partido en juego'))+(stamp?' · actualizado '+stamp:'')),control,wrap);
+    if(status==='En juego')setTimeout(()=>{if(section.isConnected&&$('#matchDialog').open){const v=picker.value;section.replaceChildren();showFabTimeline(game,section).then(()=>{const p=section.querySelector('select');if(p&&[...p.options].some(o=>o.value===v)){p.value=v;p.dispatchEvent(new Event('change'))}})}},vivo?15000:30000);
     const renderPlays=()=>{
       const header=make('tr');
       for(const label of ['Periodo','Reloj','Acción','Equipo','Jugador','Marcador']){
@@ -176,8 +196,26 @@ function mergeFeed(records){
   const source=Object.values(records).every(record=>record.source==='Afición FAB');
   $('#feedState').textContent=times.length?(source?'Calendario y marcadores de Afición FAB':'Resultados sincronizados en '+times.length+'/4 grupos')+' · '+new Date(times[0]).toLocaleString('es-ES',{timeZone:'Europe/Madrid',dateStyle:'short',timeStyle:'short'}):'Calendario de la temporada';
 }
-async function refresh(){try{const r=await fetch('./api/results-saved');if(!r.ok)throw Error();mergeFeed(await r.json());render()}catch{$('#feedState').textContent='Último calendario disponible · 24/11/2026'}}
-render();refresh();
+async function refresh(){try{const r=await fetch('./api/results-saved');if(!r.ok)throw Error();mergeFeed(await r.json());aplicarDirecto();await loadClocks();render()}catch{$('#feedState').textContent='Último calendario disponible · 24/11/2026'}}
+// ---------- Directo sin retraso (directo.js consulta Afición FAB desde el navegador) ----------
+let directo=new Map(),directoHora=0,consultando=false;
+const directoDe=g=>Date.now()-directoHora<90e3?directo.get(g.group+key(g.home)+'/'+key(g.away)):null;
+function aplicarDirecto(){
+  for(const g of games){
+    const d=directoDe(g);if(!d)continue;
+    if(d.status==='Final'){if(g.status!=='Final'){g.status='Final';g.score=d.score;g.liveScore=null}}
+    else{g.status='En juego';g.liveScore=d.score;clocks.set(g.url,d.clock)}
+  }
+  if(directoHora&&Date.now()-directoHora<90e3)$('#feedState').textContent='● En directo desde Afición FAB · '+new Date(directoHora).toLocaleTimeString('es-ES',{timeZone:'Europe/Madrid'});
+}
+async function refrescarDirecto(){
+  if(consultando||!hayQueSeguir(games))return;
+  consultando=true;
+  try{directo=await consultar();directoHora=Date.now();aplicarDirecto();render()}catch(e){console.warn('Directo no disponible:',e.message)}
+  finally{consultando=false}
+}
+(function vivo(){setTimeout(async()=>{if(!document.hidden)await refrescarDirecto();vivo()},15000)})();
+render();refresh().then(refrescarDirecto);
 // Con partidos en juego el marcador se consulta cada 30 s; si no, cada 5 min.
 (function poll(){setTimeout(async()=>{if(!document.hidden)await refresh();poll()},games.some(g=>g.status==='En juego')?30000:300000)})();
 
