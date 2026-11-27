@@ -1,4 +1,4 @@
-import { jugador as pn, equipo as eq, muestra, botonComparar, tipped } from './comun.js';
+import { jugador as pn, equipo as eq, muestra, botonComparar, tipped, avatar } from './comun.js';
 
 const $ = s => document.querySelector(s);
 const el = (tag, text, cls) => { const e = document.createElement(tag); if (text != null) e.textContent = text; if (cls) e.className = cls; return e; };
@@ -50,7 +50,7 @@ function render() {
       who.append(a, el('small', eq(p.equipo) + (g ? '' : ' · ' + p.grupo)));
       const val = el('b', (key === '+/-' || key === 'Net en pista' || key === 'On/Off') && v > 0 ? '+' + fmt(v, d) : fmt(v, key === 'MIN' && s === 'tot' ? 0 : d));
       const right = el('span'); right.append(val, botonComparar({ t: 'j', id: p.id, nombre: pn(p.nombre) }));
-      li.append(el('span', String(i + 1), 'n'), who, right);
+      li.append(el('span', String(i + 1), 'n'), avatar(p.nombre, p.equipo, 'xs'), who, right);
       ol.append(li);
     });
     box.append(ol);
