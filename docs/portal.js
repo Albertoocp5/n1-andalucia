@@ -1,5 +1,5 @@
 import {initScout} from './scouting.js';
-import {equipo as eq, jugador as pn, botonComparar} from './comun.js';
+import {equipo as eq, jugador as pn, botonComparar, escudo} from './comun.js';
 const $ = selector => document.querySelector(selector);
 const make = (tag,text,cls) => {
   const node=document.createElement(tag);
@@ -54,7 +54,8 @@ function drawGame(game){
   const row=make('div',null,'g-row');
   const mid=make('span',null,'g-score');
   if(sc){mid.append(make('b',String(sc[0]),win(0)?'w':''),document.createTextNode(' – '),make('b',String(sc[1]),win(1)?'w':''))}else mid.append(make('b',game.time,'t'));
-  row.append(make('span',eq(game.home),'g-home'+(win(0)?' w':'')),mid,make('span',eq(game.away),'g-away'+(win(1)?' w':'')));
+  const lado=(i,c)=>{const s=make('span',null,c+(win(i)?' w':''));s.append(escudo(i?game.away:game.home),make('span',eq(i?game.away:game.home)));return s};
+  row.append(lado(0,'g-home'),mid,lado(1,'g-away'));
   b.append(row);
   return b;
 }
