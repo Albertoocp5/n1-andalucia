@@ -1,4 +1,4 @@
-import { jugador as pn, equipo as eq, muestra, puesto, comparados, alternarComparar, quitarComparar, tipped } from '/comun.js';
+import { jugador as pn, equipo as eq, muestra, puesto, comparados, alternarComparar, quitarComparar, tipped, avatar, escudo } from '/comun.js';
 import { standings } from '/clasif.js';
 
 const $ = s => document.querySelector(s);
@@ -80,7 +80,7 @@ function render() {
     const x = el('button', '×', 'cmp-btn'); x.type = 'button'; x.setAttribute('aria-label', 'Quitar'); x.onclick = () => quitarComparar(items[i]);
     const box = el('span', null, 'who'); const top = el('span'); top.append(a, x);
     box.append(top, el('small', tipo === 'j' ? eq(e.equipo) + ' · grupo ' + e.grupo : 'Grupo ' + e.grupo + ' · ' + e.v + '-' + (e.pj - e.v)));
-    th.append(box); head.append(th);
+    th.append(tipo === 'j' ? avatar(e.nombre, e.equipo, 'm') : escudo(e.equipo, 'm'), box); head.append(th);
   }
   const thead = el('thead'); thead.append(head);
   const body = el('tbody');

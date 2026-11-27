@@ -29,6 +29,35 @@ export function jugador(s) {
 /** «CB LEPE ALIUS EL JAMÓN» → «CB Lepe Alius el Jamón» */
 export const equipo = s => title(s).replace(/^(\p{Ll})/u, c => c.toLocaleUpperCase('es'));
 
+// ---------- Escudos y fotos (Afición FAB, índice medios.json) ----------
+export const clave = s => String(s ?? '').normalize('NFD').toUpperCase().replace(/[^A-Z0-9]/g, '');
+let medios = null;
+const cargarMedios = () => medios ??= fetch('/medios.json').then(r => r.ok ? r.json() : {}).catch(() => ({}));
+const ponerImagen = (box, ruta, alt) => {
+  if (!ruta) return;
+  const img = new Image(); img.alt = alt || ''; img.loading = 'lazy'; img.decoding = 'async';
+  img.onload = () => box.classList.add('con-img'); img.onerror = () => img.remove();
+  img.src = new URL(ruta, document.baseURI).href; box.prepend(img);
+};
+/** Escudo del equipo (vacío y sin hueco si no hay). tam: 's' | 'm' | 'l' */
+export function escudo(nombreEquipo, tam = 's') {
+  const box = el('span', null, 'escudo escudo-' + tam); box.setAttribute('aria-hidden', 'true');
+  cargarMedios().then(m => { const r = m.escudos?.[clave(nombreEquipo)]; if (r) ponerImagen(box, r); else box.remove(); });
+  return box;
+}
+/** Foto del jugador o, si la federación no tiene, sus iniciales con el escudo de su equipo. */
+export function avatar(nombreActa, nombreEquipo, tam = 's') {
+  const box = el('span', null, 'avatar avatar-' + tam); box.setAttribute('aria-hidden', 'true');
+  const [ap, no] = String(nombreActa || '').split(',').map(x => x.trim());
+  box.append(el('b', ((no || '')[0] || '') + ((ap || '')[0] || '')));
+  cargarMedios().then(m => {
+    ponerImagen(box, m.fotos?.[clave(nombreEquipo) + '|' + clave(nombreActa)]);
+    const e = m.escudos?.[clave(nombreEquipo)];
+    if (e && tam !== 'xs') { const mini = el('i'); ponerImagen(mini, e); box.append(mini); }
+  });
+  return box;
+}
+
 // ---------- Puestos ----------
 /** Puesto (1 = mejor) y tamaño de la población; null si no hay dato. */
 export function puesto(values, v, higher = true) {

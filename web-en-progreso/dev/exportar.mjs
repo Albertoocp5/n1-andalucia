@@ -74,10 +74,25 @@ for (const g of season.games) {
   const j = await get('/api/jugadas-fab?partido=' + id);
   if (j) { await write('api/jugadas/' + id + '.json', j); plays++; }
 }
+// Escudos y fotos de Afición FAB (los descarga captura-app/recolectar.py)
+const medios = path.join(root, '..', 'datos-fab-vivo');
+let imagenes = 0;
+const indice = await readFile(path.join(medios, 'medios.json'), 'utf8').catch(() => null);
+await write('medios.json', indice ?? '{}');
+for (const sub of ['medios/escudos', 'medios/fotos']) {
+  await mkdir(path.join(out, sub), { recursive: true });
+  for (const file of await readdir(path.join(medios, sub)).catch(() => [])) {
+    const data = await readFile(path.join(medios, sub, file)), target = path.join(out, sub, file);
+    written.add(path.join(sub, file));
+    const old = await readFile(target).catch(() => null);
+    if (!old || !old.equals(data)) await writeFile(target, data);
+    imagenes++;
+  }
+}
 await write('.nojekyll', '');
 await write('404.html', '<!doctype html><html lang="es"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=./"><title>N1 Andalucía</title></head><body><a href="./">Ir a la portada</a></body></html>');
 // borrar lo que ya no se exporta
 const walk = async dir => (await readdir(dir, { withFileTypes: true })).flatMap(e => e.isDirectory() ? [] : [path.relative(out, path.join(dir, e.name))]);
-for (const dir of [out, path.join(out, 'api'), path.join(out, 'api/avanzadas/partidos'), path.join(out, 'api/jugadas')])
+for (const dir of [out, path.join(out, 'medios/escudos'), path.join(out, 'medios/fotos'), path.join(out, 'api'), path.join(out, 'api/avanzadas/partidos'), path.join(out, 'api/jugadas')])
   for (const file of await walk(dir)) if (!written.has(file)) await rm(path.join(out, file));
-console.log(`Exportado en ${out}: ${pages} páginas, ${assets} recursos, ${advanced} informes avanzados, ${plays} jugadas a jugada.`);
+console.log(`Exportado en ${out}: ${pages} páginas, ${assets} recursos, ${advanced} informes avanzados, ${plays} jugadas a jugada, ${imagenes} escudos y fotos.`);

@@ -1,5 +1,5 @@
 import { standings, formaNode } from '/clasif.js';
-import { equipo as eq, botonComparar } from '/comun.js';
+import { equipo as eq, botonComparar, escudo } from '/comun.js';
 
 const $ = s => document.querySelector(s);
 const el = (tag, text, cls) => { const e = document.createElement(tag); if (text != null) e.textContent = text; if (cls) e.className = cls; return e; };
@@ -47,7 +47,7 @@ function groupTable(g) {
     const a = advTeam.get(r.equipo);
     const x = el('tr');
     const name = el('td', null, 'l'); const link = el('a', eq(r.equipo)); link.href = '/equipo.html?n=' + encodeURIComponent(r.equipo);
-    name.append(link, botonComparar({ t: 'e', id: r.equipo, nombre: eq(r.equipo) }));
+    name.append(escudo(r.equipo), link, botonComparar({ t: 'e', id: r.equipo, nombre: eq(r.equipo) }));
     const tdf = el('td'); tdf.append(formaNode(r));
     x.append(el('td', String(r.pos), 'pos'), name, ...[r.pj, r.g, r.p, r.pf, r.pc].map(v => el('td', String(v), 'num')),
       el('td', signed(r.dif), 'num ' + (r.dif > 0 ? 'good' : r.dif < 0 ? 'bad' : '')),

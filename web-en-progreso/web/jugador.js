@@ -1,5 +1,5 @@
 import { drawCourt, zoneTable, fromRow } from '/tiros.js';
-import { jugador as pn, equipo as eq, puesto, muestra, tierPuesto, botonComparar, tipped } from '/comun.js';
+import { jugador as pn, equipo as eq, puesto, muestra, tierPuesto, botonComparar, tipped, avatar } from '/comun.js';
 
 const $ = s => document.querySelector(s);
 const el = (tag, text, cls) => { const e = document.createElement(tag); if (text != null) e.textContent = text; if (cls) e.className = cls; return e; };
@@ -101,6 +101,7 @@ function header() {
   document.title = pn(player.nombre) + ' · N1 Andalucía';
   $('#plKicker').replaceChildren(document.createTextNode('GRUPO ' + player.grupo + ' · '), Object.assign(el('a', eq(player.equipo)), { href: '/equipo.html?n=' + encodeURIComponent(player.equipo) }));
   $('#plName').replaceChildren(document.createTextNode(pn(player.nombre)), botonComparar({ t: 'j', id: player.id, nombre: pn(player.nombre) }, true));
+  document.querySelector('.pl-head').prepend(avatar(player.nombre, player.equipo, 'l'));
   $('#plMeta').textContent = `${player.pj} partidos · ${player.tit} de titular · ${fmt(player.mpp)} minutos por partido · ${fmt(player.min, 0)} minutos en total`;
   const pg = k => p => p.pj ? p[k] / p.pj : null;
   const cards = [

@@ -1,6 +1,6 @@
 import { drawCourt, zoneTable, fromRow } from '/tiros.js';
 import { simulate } from '/simulador.js';
-import { jugador as pn, equipo as eq, botonComparar, tipped, puesto, tierPuesto } from '/comun.js';
+import { jugador as pn, equipo as eq, botonComparar, tipped, puesto, tierPuesto, escudo } from '/comun.js';
 import { standings, formaNode } from '/clasif.js';
 
 const $ = s => document.querySelector(s);
@@ -39,6 +39,7 @@ document.title = eq(team.equipo) + ' · N1 Andalucía';
 const tabla = standings(season.games.filter(x => x.group === team.grupo), season.groups[team.grupo]);
 const fila = tabla.find(r => r.equipo === team.equipo);
 $('#tmKicker').textContent = 'GRUPO ' + team.grupo + (fila ? ' · ' + fila.pos + '.º DE ' + tabla.length : '');
+document.querySelector('.pl-head').prepend(escudo(team.equipo, 'l'));
 $('#tmName').replaceChildren(document.createTextNode(eq(team.equipo)), botonComparar({ t: 'e', id: team.equipo, nombre: eq(team.equipo) }, true));
 $('#tmMeta').replaceChildren(document.createTextNode(`${team.v} victorias y ${team.pj - team.v} derrotas · ${team.pts} puntos a favor y ${team.opp} en contra · `));
 if (fila) { $('#tmMeta').append('últimos partidos ', formaNode(fila), ' · '); const cl = el('a', 'ver clasificación'); cl.href = '/clasificacion.html?grupo=' + team.grupo; $('#tmMeta').append(cl); }
