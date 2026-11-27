@@ -94,24 +94,47 @@ class Medios:
                 if bajada:
                     self.d["escudos"][clave(equipo)] = self._guardar("escudos", clave(equipo).lower(), bajada)
 
+    def _foto_buscador(self, nombre):
+        """La foto de la licencia sale en el buscador de jugadores de la app (campo Foto), no en el
+        partido. Se busca por el nombre exacto del acta y se prefiere la ficha de esta temporada."""
+        for texto in (nombre, nombre.split(",")[0].strip()):
+            r = self.fab.call("busqueda.ashx", accion="buscarJugador", texto=texto, skip="0")
+            hits = [x for x in r.get("jugadores") or [] if clave(x.get("Nombre", "")) == clave(nombre) and x.get("Foto")]
+            hits.sort(key=lambda x: (x.get("Competicion") or "").strip() != COMPETICION)
+            for x in hits:
+                bajada = self._bajar("jugador", x["Foto"])
+                if bajada:
+                    return bajada
+            if hits:
+                return None
+        return None
+
+    def revisar(self, idj, forzar=False):
+        info = self.d["jugadores"][idj]
+        k = clave(info["equipo"]) + "|" + clave(info["nombre"])
+        if info.get("foto") and not forzar:
+            self.d["fotos"][k] = info["foto"]
+            return
+        if not forzar and time.time() - info.get("comprobado", 0) < self.REVISAR:
+            return
+        info["comprobado"] = int(time.time())
+        try:
+            bajada = self._foto_buscador(info["nombre"])
+        except Exception as e:  # la búsqueda de fotos nunca debe parar la descarga de datos
+            print("foto no disponible", info["nombre"], e)
+            return
+        if bajada:
+            info["foto"] = self.d["fotos"][k] = self._guardar("fotos", idj, bajada)
+
     def jugadores(self, vivo, fixture):
         ott = vivo.get("EnVivoJugadoresOTT") or {}
-        ahora = time.time()
         for lado, equipo in (("Local", fixture["NombreEquipoLocal"]), ("Visitante", fixture["NombreEquipoVisitante"])):
             for j in ott.get("JugadoresEnVivo" + lado) or []:
-                if not j.get("IdJugador") or not j.get("IdJugadorFoto"):
+                if not j.get("IdJugador"):
                     continue
-                idj, k = str(j["IdJugador"]), clave(equipo) + "|" + clave(j["Nombre"])
-                info = self.d["jugadores"].setdefault(idj, {})
-                info.update(nombre=re.sub(r"\s*,\s*", ", ", j["Nombre"].strip()), equipo=equipo.strip())
-                if info.get("foto") or ahora - info.get("comprobado", 0) < self.REVISAR:
-                    if info.get("foto"):
-                        self.d["fotos"][k] = info["foto"]
-                    continue
-                info["comprobado"] = int(ahora)
-                bajada = self._bajar("jugador", j["IdJugadorFoto"])
-                if bajada:
-                    info["foto"] = self.d["fotos"][k] = self._guardar("fotos", idj, bajada)
+                idj = str(j["IdJugador"])
+                self.d["jugadores"].setdefault(idj, {}).update(nombre=re.sub(r"\s*,\s*", ", ", j["Nombre"].strip()), equipo=equipo.strip())
+                self.revisar(idj)
 
     def cerrar(self):
         guardar(self.indice, self.d)
@@ -155,11 +178,12 @@ def main():
     medios = Medios(fab, out)
     medios.escudos(calendario)
     if args.fotos:
-        for p in calendario:
-            if p["Estado"] == "Terminado":
-                v = fab.call("envivo/partido.ashx", id_partido=p["IdPartido"])
-                if v.get("resultado") == "correcto":
-                    medios.jugadores(v, p)
+        # repaso completo de los jugadores ya conocidos (los nuevos entran al descargar sus partidos)
+        for n, idj in enumerate(list(medios.d["jugadores"]), 1):
+            medios.revisar(idj, forzar=True)
+            if n % 50 == 0:
+                guardar(medios.indice, medios.d)
+                print("Fotos revisadas:", n, "· con foto:", len(medios.d["fotos"]), flush=True)
         medios.cerrar()
         return
 
