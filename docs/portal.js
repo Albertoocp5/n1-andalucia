@@ -179,7 +179,7 @@ function showGame(g,inicial='resumen'){
   const actaSec=secciones.acta;actaSec.append(make('p','Cargando el acta…','acta-nota'));
   const ids=new Map();
   (g.box||[]).forEach(t=>{const lado=key(t.team)===key(g.home)?0:1;for(const r of t.rows)ids.set(lado+'|'+key(r[1]),r[0])});
-  const opciones=enPista=>({equipos:[eq(g.home),eq(g.away)],jugador:pn,enPista,
+  const opciones=(enPista,terminado)=>({equipos:[eq(g.home),eq(g.away)],jugador:pn,enPista,terminado,
     enlace:(f,lado)=>{const id=ids.get(lado+'|'+key(f.n));return id?'./jugador.html?id='+encodeURIComponent(id):null}});
   async function pintarDatos(){
     const datos=await cargarActa(g);
@@ -187,7 +187,7 @@ function showGame(g,inicial='resumen'){
     const pista=datos.enPista?.some(l=>l.length)?datos.enPista:null;
     const sets=pista?pista.map(l=>new Set(l.map(j=>String(j.dorsal)))):null;
     const stamp=datos.vivo?make('p','Acta en directo de Afición FAB · actualizada a las '+new Date(datos.hora).toLocaleTimeString('es-ES',{timeZone:'Europe/Madrid'})+' · se actualiza sola','acta-nota live'):make('p','Acta de Afición FAB','acta-nota');
-    actaSec.replaceChildren(stamp,pintarActa(datos.acta,opciones(sets)));
+    actaSec.replaceChildren(stamp,pintarActa(datos.acta,opciones(sets,!datos.vivo&&g.status==='Final')));
     enPistaBox.replaceChildren();
     if(datos.vivo&&pista){
       enPistaBox.append(make('h3','En pista ahora'),pintarEnPista(pista,{equipos:[eq(g.home),eq(g.away)],jugador:pn,avatar:j=>avatar(j.nombre,Number(j.idequipo)===Number(pista[0][0]?.idequipo)?g.home:g.away,'xs')}));
@@ -197,7 +197,7 @@ function showGame(g,inicial='resumen'){
     resActa.replaceChildren();
     if(cuartos){resActa.append(make('h3','Parciales'));const w=make('div',null,'table-wrap');w.append(cuartos.cloneNode(true));resActa.append(w)}
     // máximos anotadores del partido
-    const mvp=mejorDelPartido(datos.acta);
+    const mvp=!datos.vivo&&g.status==='Final'?mejorDelPartido(datos.acta):null;
     if(mvp){const p=make('p',null,'acta-mvp');p.append(make('b','★ Mejor del partido: '),pn(mvp.f.n)+' ('+eq([g.home,g.away][mvp.lado])+') · '+mvp.f.val+' de valoración, '+mvp.f.pts+' puntos, '+(mvp.f.ro+mvp.f.rd)+' rebotes y '+mvp.f.ast+' asistencias');resActa.append(p)}
     const top=datos.acta.equipos.map((f,l)=>[...f].sort((a,b)=>b.pts-a.pts)[0]&&{l,f:[...f].sort((a,b)=>b.pts-a.pts)[0]}).filter(Boolean);
     if(top.length&&!g.verified){const p=make('p',null,'acta-top');p.append('Máximos anotadores: '+top.map(x=>pn(x.f.n)+' ('+eq([g.home,g.away][x.l])+') '+x.f.pts+' pts').join(' · '));resActa.append(p)}
