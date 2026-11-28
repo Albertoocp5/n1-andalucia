@@ -262,3 +262,46 @@ dialog::backdrop{background:#0A1128a0}
 .live-block .group-head{color:#FF6B2C}
 .live-block .group-head small{color:var(--mute)}
 .game .live-clock{color:var(--warn);font-weight:700}
+
+/* ---------- Ventana del partido: pestañas, acta y quinteto en pista ---------- */
+.match-teams{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;clear:none}
+.match-teams .escudo-m{margin:0}
+.match-teams .vs{color:var(--mute);font-weight:400}
+.match-score{display:flex;align-items:baseline;gap:.8rem;margin:.4rem 0 .2rem}
+.match-score b{font-size:2rem;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.match-score .st-live{color:#FF6B2C;font-weight:700}
+.match-venue{color:var(--mute);font-size:.88rem;margin:.2rem 0 .6rem}
+.match-tabs{display:flex;gap:.3rem;flex-wrap:wrap;border-bottom:1px solid var(--line);margin:1rem 0 .8rem;position:sticky;top:-1.25rem;background:var(--surface);z-index:2;padding-top:.4rem}
+.match-tabs button{border:0;border-radius:8px 8px 0 0;background:transparent;color:var(--mute);font-weight:600;padding:.55rem .9rem;border-bottom:3px solid transparent}
+.match-tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:#FF6B2C;background:transparent}
+.match-panel h3{margin:1rem 0 .4rem}
+.match-actions{display:flex;gap:1rem;flex-wrap:wrap}
+.link-btn{border:0;background:none;padding:0;color:var(--accent-text);font-weight:700;cursor:pointer}
+.acta-nota{color:var(--mute);font-size:.82rem;margin:.5rem 0}
+.acta-nota.live{color:#FF6B2C;font-weight:600}
+.acta-tabla td,.acta-tabla th{padding:.35rem .45rem;font-size:.85rem}
+.acta-tabla td.dor{color:var(--mute);width:2.4rem}
+.acta-tabla tr.tot td{font-weight:800;border-top:2px solid var(--line);background:var(--surface-2)}
+.acta-tabla tr.cargado td{background:var(--bad-bg)}
+.acta-tabla tr.elim td.l{text-decoration:line-through;color:var(--mute)}
+.acta-tabla tr.jugando td.l{font-weight:700}
+.pista-tag{margin-left:.45rem;color:#FF6B2C;font-size:.72rem;font-weight:700;white-space:nowrap}
+.falta-tag{margin-left:.45rem;color:var(--bad);font-size:.72rem;font-weight:700}
+.acta-cuartos{width:auto;min-width:16rem}
+.acta-cuartos td,.acta-cuartos th{padding:.3rem .7rem;text-align:center}
+.acta-cuartos td.l{text-align:left;font-weight:600}
+.acta-cuartos td.tot{font-weight:800}
+.acta-top{color:var(--ink-2);font-size:.9rem}
+.en-pista{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.en-pista h4{margin:0 0 .4rem;font-size:.9rem}
+.en-pista ul{list-style:none;margin:0;padding:0}
+.en-pista li{display:grid;grid-template-columns:auto 2.2rem 1fr;align-items:center;column-gap:.4rem;padding:.35rem 0;border-bottom:1px solid var(--line-2);font-size:.88rem}
+.en-pista li .st{grid-column:3;color:var(--mute);font-size:.78rem}
+.en-pista li .n{font-weight:600}
+.en-pista li .avatar{grid-row:span 2}
+.en-pista li b{grid-row:span 2;color:var(--mute);font-weight:600}
+.en-pista li.cargado .st{color:var(--bad);font-weight:700}
+@media (max-width:640px){.en-pista{grid-template-columns:1fr}.match-score b{font-size:1.6rem}.match-tabs button{padding:.5rem .6rem;font-size:.88rem}}
+.match-score b{white-space:nowrap}
+.acta-tabla td.l{white-space:nowrap}
+@media (max-width:640px){.acta-tabla td.l{position:sticky;left:0;background:var(--surface);z-index:1}.pista-tag{font-size:0}.pista-tag::first-letter{font-size:.8rem}}

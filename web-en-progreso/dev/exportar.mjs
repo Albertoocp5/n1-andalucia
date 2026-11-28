@@ -6,6 +6,7 @@ import { mkdir, rm, writeFile, readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { fileBucket } from './bucket.mjs';
+import { actaFab } from '../web/acta.js';
 
 const root = path.join(import.meta.dirname, '..');
 const out = path.resolve(process.argv[2] || path.join(root, '..', 'docs'));
@@ -36,6 +37,7 @@ const relative = text => text
 // Escritura estable: un archivo solo se reescribe si cambia algo más que sus marcas de hora,
 // para que el repositorio no acumule cambios vacíos en cada actualización.
 await mkdir(path.join(out, 'api/avanzadas/partidos'), { recursive: true });
+await mkdir(path.join(out, 'api/actas'), { recursive: true });
 await mkdir(path.join(out, 'api/jugadas'), { recursive: true });
 const written = new Set();
 const strip = t => t.replace(/"(checkedAt|lastCheck|lastGood|lastFull)":"[^"]*"/g, '');
@@ -89,10 +91,23 @@ for (const sub of ['medios/escudos', 'medios/fotos']) {
     imagenes++;
   }
 }
+// Actas (estadísticas individuales tipo acta FAB) de cada partido descargado
+const clave = s => String(s ?? '').normalize('NFD').toUpperCase().replace(/[^A-Z0-9]/g, '');
+const porEquipos = new Map(season.games.map(g => [g.group + clave(g.home) + '/' + clave(g.away), g]));
+let actas = 0;
+for (const file of await readdir(path.join(medios, 'partidos')).catch(() => [])) {
+  const d = JSON.parse(await readFile(path.join(medios, 'partidos', file), 'utf8'));
+  const fx = d.fixture || {};
+  const g = porEquipos.get(fx.group + clave(fx.NombreEquipoLocal) + '/' + clave(fx.NombreEquipoVisitante));
+  if (!g || !(d.local?.length || d.visitante?.length)) continue;
+  const id = g.url.split('?')[0].split('/').at(-1);
+  await write('api/actas/' + id + '.json', JSON.stringify({ id, estado: fx.Estado, capturado: d.capturado, ...actaFab(d.local, d.visitante, d.partido?.periodos) }));
+  actas++;
+}
 await write('.nojekyll', '');
 await write('404.html', '<!doctype html><html lang="es"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=./"><title>N1 Andalucía</title></head><body><a href="./">Ir a la portada</a></body></html>');
 // borrar lo que ya no se exporta
 const walk = async dir => (await readdir(dir, { withFileTypes: true })).flatMap(e => e.isDirectory() ? [] : [path.relative(out, path.join(dir, e.name))]);
-for (const dir of [out, path.join(out, 'medios/escudos'), path.join(out, 'medios/fotos'), path.join(out, 'api'), path.join(out, 'api/avanzadas/partidos'), path.join(out, 'api/jugadas')])
+for (const dir of [out, path.join(out, 'medios/escudos'), path.join(out, 'medios/fotos'), path.join(out, 'api'), path.join(out, 'api/avanzadas/partidos'), path.join(out, 'api/jugadas'), path.join(out, 'api/actas')])
   for (const file of await walk(dir)) if (!written.has(file)) await rm(path.join(out, file));
-console.log(`Exportado en ${out}: ${pages} páginas, ${assets} recursos, ${advanced} informes avanzados, ${plays} jugadas a jugada, ${imagenes} escudos y fotos.`);
+console.log(`Exportado en ${out}: ${pages} páginas, ${assets} recursos, ${advanced} informes avanzados, ${plays} jugadas a jugada, ${imagenes} escudos y fotos, ${actas} actas.`);
