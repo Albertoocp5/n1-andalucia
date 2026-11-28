@@ -15,4 +15,4 @@ const matches=[{"label":"18:30\nPC BOX GMASB\nMAGAR CDB ADRA\n83\n46\nFinal","se
       upsert(matches,match);
     }
   }
-  const reportUpdated = "2026-11-27";
+  const reportUpdated = "2026-11-28";
