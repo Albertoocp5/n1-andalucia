@@ -211,7 +211,7 @@ function renderModo() {
   for (const [m, t, d] of opciones) {
     const b = el('button', null, 'entrada-opcion' + (m === 'aficionado' ? ' destacada' : '')); b.type = 'button';
     b.append(el('b', t), el('span', d), el('em', 'Entrar →'));
-    b.onclick = () => { setModo(m); capa.remove(); document.documentElement.classList.remove('con-entrada'); };
+    b.onclick = () => { setModo(m); pasoEquipo(); };
     caja.append(b); primero ??= b;
   }
   caja.append(el('p', 'La elección se guarda en este navegador.', 'entrada-nota'));
@@ -219,6 +219,28 @@ function renderModo() {
   document.documentElement.classList.add('con-entrada');
   document.body.append(capa);
   primero.focus();
+  const cerrar = () => { capa.remove(); document.documentElement.classList.remove('con-entrada'); };
+  // Segundo paso: tu equipo (opcional)
+  async function pasoEquipo() {
+    if (equipoFavorito()) return cerrar();
+    const season = await fetch('/season.json').then(r => r.ok ? r.json() : null).catch(() => null);
+    if (!season?.groups) return cerrar();
+    const h2 = el('h1', '¿Cuál es tu equipo?'); h2.id = 'entradaTitulo';
+    const sel = el('select', null, 'entrada-select'); sel.setAttribute('aria-label', 'Tu equipo');
+    sel.append(new Option('Elige tu equipo…', ''));
+    for (const g of Object.keys(season.groups).sort()) {
+      const og = document.createElement('optgroup'); og.label = 'Grupo ' + g;
+      for (const t of [...season.groups[g]].sort((a, b) => equipo(a).localeCompare(equipo(b), 'es'))) og.append(new Option(equipo(t), t));
+      sel.append(og);
+    }
+    const entrar = el('button', 'Entrar →', 'entrada-entrar'); entrar.type = 'button'; entrar.disabled = true;
+    sel.onchange = () => { entrar.disabled = !sel.value; };
+    entrar.onclick = () => { if (sel.value) setEquipoFavorito(sel.value); cerrar(); };
+    const saltar = el('button', 'Ahora no', 'entrada-saltar'); saltar.type = 'button'; saltar.onclick = cerrar;
+    caja.replaceChildren(h2, el('p', 'Lo verás destacado en toda la web: su próximo partido, su puesto y sus jugadores.', 'entrada-sub'), sel, entrar, saltar,
+      el('p', 'Puedes cambiarlo cuando quieras desde la portada o la ficha del equipo.', 'entrada-nota'));
+    sel.focus();
+  }
 }
 
 // ---------- Explicaciones emergentes ----------

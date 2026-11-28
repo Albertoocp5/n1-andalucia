@@ -81,7 +81,8 @@ async function loadClocks(){
   }));
 }
 function renderBoard(){
-  const live=games.filter(g=>g.status==='En juego').sort((a,b)=>a.group.localeCompare(b.group));
+  const favLive=equipoFavorito(),esFav=g=>favLive&&(g.home===favLive||g.away===favLive);
+  const live=games.filter(g=>g.status==='En juego').sort((a,b)=>esFav(b)-esFav(a)||a.group.localeCompare(b.group));
   const liveBlock=live.length?(()=>{const b=make('div',null,'block live-block');const h=make('div','● EN DIRECTO','group-head');h.append(make('small',live.length+(live.length>1?' partidos':' partido')+' · se actualiza solo'));b.append(h,...live.map(drawGame));return b})():null;
   const blocks=(activeGroup?[activeGroup]:groups).map(group=>{
     const rows=weekGames(week,group),block=make('div',null,'block');
