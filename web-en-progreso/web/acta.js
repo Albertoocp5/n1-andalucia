@@ -64,11 +64,11 @@ const suma = filas => {
  * Tablas del acta. opciones: { equipos: [local, visitante] (nombres ya legibles), jugador(nombreActa) → texto,
  * enlace(fila, lado) → href o null, enPista: [Set(dorsales), Set(dorsales)] }
  */
-export function pintarActa(acta, { equipos, jugador = x => x, enlace = () => null, enPista } = {}) {
+export function pintarActa(acta, { equipos, jugador = x => x, enlace = () => null, enPista, terminado = true } = {}) {
   const box = el('div', null, 'acta');
   const todos = acta.equipos.flat();
   const maximos = COLS.map(c => c[4] ? Math.max(...todos.map(c[4])) : null);
-  const mvp = mejorDelPartido(acta);
+  const mvp = terminado ? mejorDelPartido(acta) : null; // el MVP solo con el partido terminado
   if (acta.periodos?.length) {
     const t = el('table', null, 'acta-cuartos'), h = el('tr');
     h.append(el('th', ''), ...acta.periodos.map((_, i) => el('th', i < 4 ? i + 1 + '.º' : 'Pr' + (i > 4 ? i - 3 : ''))), el('th', 'Total'));
@@ -112,7 +112,7 @@ export function pintarActa(acta, { equipos, jugador = x => x, enlace = () => nul
     t.append(thead, tb);
     const w = el('div', null, 'table-wrap'); w.append(t); box.append(w);
   });
-  box.append(el('p', '* titular · ★ MVP: mejor valoración del partido · en negrita, el máximo del partido en cada estadística · fila resaltada: 4 faltas · nombre tachado: eliminado (5 faltas) · ● en pista: jugando ahora.', 'acta-nota'));
+  box.append(el('p', '* titular · ' + (mvp ? '★ MVP: mejor valoración del partido · ' : '') + 'en negrita, el máximo del partido en cada estadística · fila resaltada: 4 faltas · nombre tachado: eliminado (5 faltas) · ● en pista: jugando ahora.', 'acta-nota'));
   return box;
 }
 
