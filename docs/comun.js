@@ -220,6 +220,27 @@ function renderModo() {
   document.body.append(capa);
   primero.focus();
   const cerrar = () => { capa.remove(); document.documentElement.classList.remove('con-entrada'); };
+  // Tercer paso: avisos del partido de tu equipo (opcional)
+  async function pasoAvisos() {
+    if (!equipoFavorito()) return cerrar();
+    const av = await import('./avisos.js');
+    if (av.necesitaPantallaInicio()) {
+      const h = el('h1', 'Avisos en tu iPhone'); h.id = 'entradaTitulo';
+      const ol = el('ol', null, 'pasos-ios'); for (const t of av.PASOS_IOS) ol.append(el('li', t));
+      const vale = el('button', 'Entendido', 'entrada-entrar'); vale.type = 'button'; vale.onclick = cerrar;
+      caja.replaceChildren(h, el('p', 'En iPhone, los avisos de los partidos de ' + equipo(equipoFavorito()) + ' solo funcionan si añades la web a la pantalla de inicio. Se abrirá como una app, con su propio icono:', 'entrada-sub'), ol, vale);
+      return vale.focus();
+    }
+    if (!('Notification' in window) || Notification.permission === 'denied') return cerrar();
+    if (av.activos()) return cerrar();
+    const h3 = el('h1', '¿Quieres avisos de sus partidos?'); h3.id = 'entradaTitulo';
+    const si = el('button', '🔔 Activar avisos', 'entrada-entrar'); si.type = 'button';
+    si.onclick = async () => { await av.activar(); cerrar(); };
+    const no = el('button', 'Ahora no', 'entrada-saltar'); no.type = 'button'; no.onclick = cerrar;
+    caja.replaceChildren(h3, el('p', 'Te avisamos cuando empiece el partido de ' + equipo(equipoFavorito()) + ', al final de cada cuarto, en el último minuto, si hay prórroga y con el resultado final.', 'entrada-sub'),
+      si, no, el('p', 'Llegan mientras tengas la web abierta, aunque sea en otra pestaña. En iPhone, solo si la añades a la pantalla de inicio. Puedes quitarlos desde la tarjeta de tu equipo en la portada.', 'entrada-nota'));
+    si.focus();
+  }
   // Segundo paso: tu equipo (opcional)
   async function pasoEquipo() {
     if (equipoFavorito()) return cerrar();
@@ -235,7 +256,7 @@ function renderModo() {
     }
     const entrar = el('button', 'Entrar →', 'entrada-entrar'); entrar.type = 'button'; entrar.disabled = true;
     sel.onchange = () => { entrar.disabled = !sel.value; };
-    entrar.onclick = () => { if (sel.value) setEquipoFavorito(sel.value); cerrar(); };
+    entrar.onclick = () => { if (sel.value) setEquipoFavorito(sel.value); pasoAvisos(); };
     const saltar = el('button', 'Ahora no', 'entrada-saltar'); saltar.type = 'button'; saltar.onclick = cerrar;
     caja.replaceChildren(h2, el('p', 'Lo verás destacado en toda la web: su próximo partido, su puesto y sus jugadores.', 'entrada-sub'), sel, entrar, saltar,
       el('p', 'Puedes cambiarlo cuando quieras desde la portada o la ficha del equipo.', 'entrada-nota'));
@@ -352,5 +373,45 @@ function renderCmpBar() {
 }
 
 // ---------- Arranque ----------
-function boot() { renderHeader(); renderModo(); renderCmpBar(); annotate(); }
+// Avisos del partido de tu equipo en el resto de páginas (en la portada los lleva portal.js).
+async function vigilarAvisos() {
+  if (document.getElementById('marcador')) return;
+  const fav = equipoFavorito();
+  if (!fav) return;
+  const av = await import('./avisos.js');
+  if (!av.activos()) return;
+  const season = await fetch('./season.json').then(r => r.ok ? r.json() : null).catch(() => null);
+  if (!season?.games) return;
+  const mios = season.games.filter(g => g.home === fav || g.away === fav);
+  const dir = await import('./directo.js');
+  let ocupado = false;
+  const paso = async () => {
+    if (ocupado || !av.activos() || !dir.hayQueSeguir(mios)) return;
+    ocupado = true;
+    try {
+      const m = await dir.consultar(mios);
+      for (const g of mios) {
+        const d = m.get(g.group + clave(g.home) + '/' + clave(g.away));
+        if (!d) continue;
+        if (d.status === 'Final') g.status = 'Final'; else g.status = 'En juego';
+        const id = g.url.split('?')[0].split('/').at(-1);
+        av.revisar(id, d, [equipo(g.home), equipo(g.away)], { url: new URL('./index.html?partido=' + encodeURIComponent(id), location.href).href });
+      }
+    } catch {} finally { ocupado = false; }
+  };
+  paso(); setInterval(paso, 15000);
+}
+// Instalar la web como app (Android y ordenador; en iPhone se hace desde Compartir).
+let instalacion = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); instalacion = e; window.dispatchEvent(new CustomEvent('n1-instalable')); });
+export const instalable = () => !!instalacion;
+export async function instalar() {
+  if (!instalacion) return false;
+  instalacion.prompt();
+  const r = await instalacion.userChoice.catch(() => null);
+  instalacion = null; window.dispatchEvent(new CustomEvent('n1-instalable'));
+  return r?.outcome === 'accepted';
+}
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
+function boot() { renderHeader(); renderModo(); renderCmpBar(); annotate(); vigilarAvisos(); }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
