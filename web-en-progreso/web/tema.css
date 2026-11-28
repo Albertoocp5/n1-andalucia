@@ -305,3 +305,9 @@ dialog::backdrop{background:#0A1128a0}
 .match-score b{white-space:nowrap}
 .acta-tabla td.l{white-space:nowrap}
 @media (max-width:640px){.acta-tabla td.l{position:sticky;left:0;background:var(--surface);z-index:1}.pista-tag{font-size:0}.pista-tag::first-letter{font-size:.8rem}}
+.share-btn{float:right;margin:0 .5rem 0 0}
+.acta-link{color:var(--accent-text);font-weight:700;text-decoration:underline;cursor:pointer}
+.acta-tabla td.maximo{font-weight:800;color:var(--ink)}
+.acta-tabla tr.mvp td{background:var(--hl-bg)}
+.mvp-tag{margin-left:.45rem;color:#FF6B2C;font-size:.72rem;font-weight:800;white-space:nowrap}
+.acta-mvp{margin:.6rem 0;font-size:.92rem}.acta-mvp b{color:#FF6B2C}

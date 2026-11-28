@@ -1,7 +1,7 @@
 import {initScout} from './scouting.js';
 import {equipo as eq, jugador as pn, botonComparar, escudo, avatar, modo as modoActual} from './comun.js';
 import {hayQueSeguir, consultar, jugadas as jugadasDirecto, actaDirecto} from './directo.js';
-import {pintarActa, pintarEnPista} from './acta.js';
+import {pintarActa, pintarEnPista, mejorDelPartido} from './acta.js';
 const $ = selector => document.querySelector(selector);
 const make = (tag,text,cls) => {
   const node=document.createElement(tag);
@@ -53,6 +53,8 @@ function drawGame(game){
   const meta=make('small',pretty(game.date)+' · '+game.time+' · ');meta.append(make('span',state,'st st-'+(game.status==='Final'?'fin':game.status==='En juego'?'live':'prev')));
   if(game.status==='En juego'&&clocks.get(game.url))meta.append(make('span',' · '+clocks.get(game.url),'live-clock'));
   if(moved)meta.append(make('span',' · fecha cambiada','moved'));
+  if(game.score||game.liveScore){const ac=make('span',game.status==='En juego'?'Acta en directo':'Acta','acta-link');ac.setAttribute('role','link');ac.tabIndex=0;
+    const abrir=e=>{e.stopPropagation();e.preventDefault();showGame(game,'acta')};ac.onclick=abrir;ac.onkeydown=e=>{if(e.key==='Enter'||e.key===' ')abrir(e)};meta.append(' · ',ac)}
   b.append(meta);
   const sc=game.liveScore||game.score,win=i=>sc&&game.status==='Final'&&sc[i]>sc[1-i];
   const row=make('div',null,'g-row');
@@ -100,7 +102,7 @@ function leaderText(game){
   const p=leaders[0];return p.name+' lideró la anotación con '+max+' puntos'+(p.reb!=null&&p.reb!==''?', '+p.reb+' rebotes':'')+(p.ast!=null&&p.ast!==''?' y '+p.ast+' asistencias':'')+'.';
 }
 // ---------- Ventana del partido: Resumen · Acta · Jugada a jugada · Avanzado ----------
-let liveTimer=null,ultimaPestana='resumen';
+let liveTimer=null;
 const idPartido=g=>g.url?.split('?')[0].split('/').at(-1);
 async function cargarActa(g){
   const d=directoDe(g);
@@ -122,13 +124,20 @@ function cajaAntigua(g){
   }
   return box;
 }
-function showGame(g){
+function showGame(g,inicial='resumen'){
   clearTimeout(liveTimer);
   const body=$('#matchBody');
   const h2=make('h2',null,'match-teams');
   h2.append(escudo(g.home,'m'),make('span',eq(g.home)),make('span','—','vs'),make('span',eq(g.away)),escudo(g.away,'m'));
   const marcador=make('p',null,'match-score');
-  body.replaceChildren(make('small','GRUPO '+g.group+' · '+(g.round?g.round.toUpperCase()+' · ':'')+pretty(g.date)+' · '+g.time,'kicker'),h2,marcador);
+  const compartir=action('Compartir',async()=>{
+    const url=new URL(location.pathname+'?partido='+encodeURIComponent(idPartido(g)),location.href).href;
+    const titulo=eq(g.home)+' – '+eq(g.away)+((g.liveScore||g.score)?' '+(g.liveScore||g.score).join('-'):'');
+    try{if(navigator.share){await navigator.share({title:titulo,text:titulo+' · N1 Andalucía',url});return}}catch(e){if(e.name==='AbortError')return}
+    try{await navigator.clipboard.writeText(url);compartir.textContent='Enlace copiado ✓'}catch{prompt('Copia el enlace del partido:',url)}
+    setTimeout(()=>compartir.textContent='Compartir',2500);
+  },'share-btn');
+  body.replaceChildren(compartir,make('small','GRUPO '+g.group+' · '+(g.round?g.round.toUpperCase()+' · ':'')+pretty(g.date)+' · '+g.time,'kicker'),h2,marcador);
   const pintaMarcador=()=>{
     const s=g.liveScore||g.score;marcador.replaceChildren();
     if(!s)return;
@@ -150,7 +159,6 @@ function showGame(g){
   }
   function elegir(k){
     if(k==='avanzado'&&modoActual()!=='analista')k='resumen';
-    ultimaPestana=k;
     for(const b of bar.children)b.setAttribute('aria-selected',String(b.dataset.tab===k));
     for(const [n,sec] of Object.entries(secciones))sec.hidden=n!==k;
   }
@@ -189,6 +197,8 @@ function showGame(g){
     resActa.replaceChildren();
     if(cuartos){resActa.append(make('h3','Parciales'));const w=make('div',null,'table-wrap');w.append(cuartos.cloneNode(true));resActa.append(w)}
     // máximos anotadores del partido
+    const mvp=mejorDelPartido(datos.acta);
+    if(mvp){const p=make('p',null,'acta-mvp');p.append(make('b','★ Mejor del partido: '),pn(mvp.f.n)+' ('+eq([g.home,g.away][mvp.lado])+') · '+mvp.f.val+' de valoración, '+mvp.f.pts+' puntos, '+(mvp.f.ro+mvp.f.rd)+' rebotes y '+mvp.f.ast+' asistencias');resActa.append(p)}
     const top=datos.acta.equipos.map((f,l)=>[...f].sort((a,b)=>b.pts-a.pts)[0]&&{l,f:[...f].sort((a,b)=>b.pts-a.pts)[0]}).filter(Boolean);
     if(top.length&&!g.verified){const p=make('p',null,'acta-top');p.append('Máximos anotadores: '+top.map(x=>pn(x.f.n)+' ('+eq([g.home,g.away][x.l])+') '+x.f.pts+' pts').join(' · '));resActa.append(p)}
   }
@@ -199,7 +209,7 @@ function showGame(g){
   showAdvanced(g,secciones.avanzado);
   if(g.box?.length&&!g.verified)res.append(make('p','La suma de puntos individuales o el desglose disponible difiere del marcador. Revisión pendiente.'));
 
-  elegir(ultimaPestana);
+  elegir(inicial);
   if(!$('#matchDialog').open)$('#matchDialog').showModal();
   // En directo: marcador, quinteto en pista y acta se refrescan cada 15 s mientras la ventana esté abierta.
   const vivo=()=>{liveTimer=setTimeout(async()=>{if(!$('#matchDialog').open||!body.contains(marcador))return;pintaMarcador();if(g.status==='En juego'||directoDe(g)?.status==='En juego'){await pintarDatos();vivo()}else pintarDatos()},15000)};
@@ -297,7 +307,7 @@ render();refresh().then(refrescarDirecto);
 const selectedMatch=new URLSearchParams(location.search).get('partido');
 if(selectedMatch){
   const game=games.find(g=>g.url?.split('?')[0].split('/').at(-1)===selectedMatch);
-  if(game){week=game.round;activeGroup=game.group;render();showGame(game);}
+  if(game){week=game.round;activeGroup=game.group;render();showGame(game,new URLSearchParams(location.search).get('pestana')||'resumen');}
 }else{
   const qs=new URLSearchParams(location.search);
   if(qs.get('jornada')&&games.some(g=>g.round===qs.get('jornada'))){week=qs.get('jornada');if('ABCD'.includes(qs.get('grupo')||'x'))activeGroup=qs.get('grupo');render()}
