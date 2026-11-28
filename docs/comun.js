@@ -413,5 +413,24 @@ export async function instalar() {
   return r?.outcome === 'accepted';
 }
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
-function boot() { renderHeader(); renderModo(); renderCmpBar(); annotate(); vigilarAvisos(); }
+// Franja «Instala N1 Andalucía»: Android/ordenador (si el navegador lo permite) e iPhone (pasos).
+// Al cerrarla no vuelve a salir en 30 días.
+const CERRADA = 'n1-instalar-cerrada';
+async function franjaInstalar() {
+  const av = await import('./avisos.js');
+  if (av.comoApp() || Date.now() - store.get(CERRADA, 0) < 30 * 864e5) return;
+  const ios = av.necesitaPantallaInicio();
+  if (!ios && !instalable()) return;
+  if (document.querySelector('.franja-instalar')) return;
+  const f = el('div', null, 'franja-instalar'); f.setAttribute('role', 'region'); f.setAttribute('aria-label', 'Instalar la app');
+  const txt = el('div', null, 'fi-texto');
+  txt.append(el('b', 'Instala N1 Andalucía en tu móvil'), el('span', ios ? 'Pulsa Compartir y luego «Añadir a pantalla de inicio». Se abrirá como una app y podrás recibir avisos.' : 'Ábrela como una app, con su propio icono, y recibe avisos de tu equipo.'));
+  f.append(el('span', 'N1', 'logo'), txt);
+  if (!ios) { const b = el('button', 'Instalar', 'fi-instalar'); b.type = 'button'; b.onclick = async () => { await instalar(); f.remove(); }; f.append(b); }
+  const x = el('button', '×', 'fi-cerrar'); x.type = 'button'; x.setAttribute('aria-label', 'Cerrar'); x.onclick = () => { store.set(CERRADA, Date.now()); f.remove(); };
+  f.append(x);
+  document.body.append(f);
+}
+window.addEventListener('n1-instalable', () => { if (instalable()) franjaInstalar(); });
+function boot() { renderHeader(); renderModo(); renderCmpBar(); annotate(); vigilarAvisos(); setTimeout(franjaInstalar, 1500); }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
