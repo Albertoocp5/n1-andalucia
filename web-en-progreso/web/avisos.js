@@ -6,6 +6,11 @@ const leer = (k, d) => { try { const v = localStorage.getItem(k); return v == nu
 const escribir = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
 
 export const soportados = () => 'Notification' in window;
+const esIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+export const comoApp = () => navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+/** iPhone/iPad en Safari: los avisos solo funcionan con la web añadida a la pantalla de inicio. */
+export const necesitaPantallaInicio = () => esIOS() && !comoApp();
+export const PASOS_IOS = ['Pulsa el botón Compartir (el cuadrado con la flecha hacia arriba).', 'Elige «Añadir a pantalla de inicio».', 'Abre N1 Andalucía desde el nuevo icono y activa los avisos.'];
 export const activos = () => soportados() && Notification.permission === 'granted' && leer(ACTIVOS, false);
 
 let registro = null;

@@ -364,3 +364,7 @@ tr.fav td{background:var(--hl-bg)}
 .avisos-btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:.35rem .9rem;font-weight:700;font-size:.85rem;cursor:pointer}
 .avisos-btn[aria-pressed=true]{background:#FF6B2C;border-color:#FF6B2C;color:var(--brand)}
 .avisos-btn:disabled{opacity:.6;cursor:not-allowed}
+.pasos-ios{margin:.4rem 0 1rem 1.2rem;padding:0;color:var(--ink-2);line-height:1.5}
+.pasos-ios li{margin:.25rem 0}
+.pasos-ios-box{flex-basis:100%;font-weight:500}
+.pasos-ios-box summary{color:var(--accent-text);font-weight:700}

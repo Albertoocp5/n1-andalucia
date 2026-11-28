@@ -1,5 +1,5 @@
 import {initScout} from './scouting.js';
-import {equipo as eq, jugador as pn, botonComparar, escudo, avatar, modo as modoActual, equipoFavorito, setEquipoFavorito, botonSeguir} from './comun.js';
+import {equipo as eq, jugador as pn, botonComparar, escudo, avatar, modo as modoActual, equipoFavorito, setEquipoFavorito, botonSeguir, instalable, instalar} from './comun.js';
 import {standings, formaNode} from './clasif.js';
 import * as avisos from './avisos.js';
 import {hayQueSeguir, consultar, jugadas as jugadasDirecto, actaDirecto} from './directo.js';
@@ -317,11 +317,17 @@ function pintarTuEquipo(){
     bt.onclick=async()=>{if(avisos.activos())avisos.desactivar();else await avisos.activar();pinta()};
     pinta();pie.append(bt);
   }
+  if(!avisos.soportados()&&avisos.necesitaPantallaInicio()){
+    const d=make('details',null,'pasos-ios-box');d.append(make('summary','📲 Avisos en iPhone: añade la web a la pantalla de inicio'));
+    const ol=make('ol',null,'pasos-ios');for(const t of avisos.PASOS_IOS)ol.append(make('li',t));d.append(ol);pie.append(d);
+  }
+  if(instalable()){const ins=action('📲 Instalar la app',async()=>{await instalar()},'avisos-btn');pie.append(ins)}
   pie.append(selectorEquipo('Cambiar: '));
   tuEquipo.replaceChildren(cab,partidos,pie);
 }
 window.addEventListener('n1-equipo',()=>render());
 window.addEventListener('n1-avisos',()=>pintarTuEquipo());
+window.addEventListener('n1-instalable',()=>pintarTuEquipo());
 function render(){renderControls();renderBoard();pintarTuEquipo()}
 $('#week').onchange=e=>{week=e.target.value;history.replaceState(null,'','?jornada='+encodeURIComponent(week));render()};
 $('#dismiss').onclick=()=>$('#matchDialog').close();

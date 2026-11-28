@@ -222,8 +222,16 @@ function renderModo() {
   const cerrar = () => { capa.remove(); document.documentElement.classList.remove('con-entrada'); };
   // Tercer paso: avisos del partido de tu equipo (opcional)
   async function pasoAvisos() {
-    if (!equipoFavorito() || !('Notification' in window) || Notification.permission === 'denied') return cerrar();
+    if (!equipoFavorito()) return cerrar();
     const av = await import('/avisos.js');
+    if (av.necesitaPantallaInicio()) {
+      const h = el('h1', 'Avisos en tu iPhone'); h.id = 'entradaTitulo';
+      const ol = el('ol', null, 'pasos-ios'); for (const t of av.PASOS_IOS) ol.append(el('li', t));
+      const vale = el('button', 'Entendido', 'entrada-entrar'); vale.type = 'button'; vale.onclick = cerrar;
+      caja.replaceChildren(h, el('p', 'En iPhone, los avisos de los partidos de ' + equipo(equipoFavorito()) + ' solo funcionan si añades la web a la pantalla de inicio. Se abrirá como una app, con su propio icono:', 'entrada-sub'), ol, vale);
+      return vale.focus();
+    }
+    if (!('Notification' in window) || Notification.permission === 'denied') return cerrar();
     if (av.activos()) return cerrar();
     const h3 = el('h1', '¿Quieres avisos de sus partidos?'); h3.id = 'entradaTitulo';
     const si = el('button', '🔔 Activar avisos', 'entrada-entrar'); si.type = 'button';
@@ -393,5 +401,17 @@ async function vigilarAvisos() {
   };
   paso(); setInterval(paso, 15000);
 }
+// Instalar la web como app (Android y ordenador; en iPhone se hace desde Compartir).
+let instalacion = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); instalacion = e; window.dispatchEvent(new CustomEvent('n1-instalable')); });
+export const instalable = () => !!instalacion;
+export async function instalar() {
+  if (!instalacion) return false;
+  instalacion.prompt();
+  const r = await instalacion.userChoice.catch(() => null);
+  instalacion = null; window.dispatchEvent(new CustomEvent('n1-instalable'));
+  return r?.outcome === 'accepted';
+}
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
 function boot() { renderHeader(); renderModo(); renderCmpBar(); annotate(); vigilarAvisos(); }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();

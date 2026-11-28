@@ -76,6 +76,14 @@ for (const g of season.games) {
   const j = await get('/api/jugadas-fab?partido=' + id);
   if (j) { await write('api/jugadas/' + id + '.json', j); plays++; }
 }
+// Iconos de la web (pantalla de inicio del móvil)
+for (const file of await readdir(path.join(root, 'web'))) {
+  if (!file.endsWith('.png')) continue;
+  const data = await readFile(path.join(root, 'web', file)), target = path.join(out, file);
+  written.add(file);
+  const old = await readFile(target).catch(() => null);
+  if (!old || !old.equals(data)) await writeFile(target, data);
+}
 // Escudos y fotos de Afición FAB (los descarga captura-app/recolectar.py)
 const medios = path.join(root, '..', 'datos-fab-vivo');
 let imagenes = 0;
