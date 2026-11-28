@@ -211,7 +211,7 @@ function aplicarDirecto(){
 async function refrescarDirecto(){
   if(consultando||!hayQueSeguir(games))return;
   consultando=true;
-  try{directo=await consultar();directoHora=Date.now();aplicarDirecto();render()}catch(e){console.warn('Directo no disponible:',e.message)}
+  try{directo=await consultar(games);directoHora=Date.now();aplicarDirecto();render()}catch(e){console.warn('Directo no disponible:',e.message)}
   finally{consultando=false}
 }
 (function vivo(){setTimeout(async()=>{if(!document.hidden)await refrescarDirecto();vivo()},15000)})();
