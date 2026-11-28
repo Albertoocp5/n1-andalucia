@@ -416,8 +416,12 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').ca
 // Franja «Instala N1 Andalucía»: Android/ordenador (si el navegador lo permite) e iPhone (pasos).
 // Al cerrarla no vuelve a salir en 30 días.
 const CERRADA = 'n1-instalar-cerrada';
+// Visitas: se cuenta una por cada vez que se abre la web (no por cada página).
+try { if (!sessionStorage.getItem('n1-visita')) { sessionStorage.setItem('n1-visita', '1'); store.set('n1-visitas', store.get('n1-visitas', 0) + 1); } } catch {}
 async function franjaInstalar() {
   const av = await import('./avisos.js');
+  // A partir de la segunda visita: en la primera ya está la pantalla de entrada.
+  if (store.get('n1-visitas', 0) < 2) return;
   if (av.comoApp() || Date.now() - store.get(CERRADA, 0) < 30 * 864e5) return;
   const ios = av.necesitaPantallaInicio();
   if (!ios && !instalable()) return;
