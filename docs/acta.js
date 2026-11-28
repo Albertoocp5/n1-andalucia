@@ -30,16 +30,26 @@ const signo = v => v == null ? '—' : v > 0 ? '+' + v : String(v);
 // [cabecera, valor, solo analista, explicación]
 const COLS = [
   ['MIN', f => f.s ? mmss(f.s) : '—', 0, 'Minutos jugados'],
-  ['PTS', f => f.pts, 0, 'Puntos'],
+  ['PTS', f => f.pts, 0, 'Puntos', f => f.pts],
   ['T2', f => f.t2.join('/'), 1, 'Tiros de dos: anotados/intentados'], ['T2%', f => pct(f.t2), 1, 'Acierto en tiros de dos'],
   ['T3', f => f.t3.join('/'), 0, 'Triples: anotados/intentados'], ['T3%', f => pct(f.t3), 1, 'Acierto en triples'],
   ['TL', f => f.t1.join('/'), 1, 'Tiros libres: anotados/intentados'], ['TL%', f => pct(f.t1), 1, 'Acierto en tiros libres'],
-  ['RO', f => f.ro, 1, 'Rebotes ofensivos'], ['RD', f => f.rd, 1, 'Rebotes defensivos'], ['REB', f => f.ro + f.rd, 0, 'Rebotes totales'],
-  ['AST', f => f.ast, 0, 'Asistencias'], ['ROB', f => f.rob, 1, 'Robos (recuperaciones)'], ['PER', f => f.per, 1, 'Pérdidas'],
-  ['TAP', f => f.tc, 1, 'Tapones puestos'], ['TAPR', f => f.tr, 1, 'Tapones recibidos'],
+  ['RO', f => f.ro, 1, 'Rebotes ofensivos'], ['RD', f => f.rd, 1, 'Rebotes defensivos'], ['REB', f => f.ro + f.rd, 0, 'Rebotes totales', f => f.ro + f.rd],
+  ['AST', f => f.ast, 0, 'Asistencias', f => f.ast], ['ROB', f => f.rob, 1, 'Robos (recuperaciones)', f => f.rob], ['PER', f => f.per, 1, 'Pérdidas'],
+  ['TAP', f => f.tc, 1, 'Tapones puestos', f => f.tc], ['TAPR', f => f.tr, 1, 'Tapones recibidos'],
   ['FC', f => f.fc, 0, 'Faltas cometidas (5 = eliminado)'], ['FR', f => f.fr, 1, 'Faltas recibidas'],
-  ['+/-', f => signo(f.mm), 1, 'Diferencia en el marcador con él en pista'], ['VAL', f => f.val, 0, 'Valoración'],
+  ['+/-', f => signo(f.mm), 1, 'Diferencia en el marcador con él en pista'], ['VAL', f => f.val, 0, 'Valoración', f => f.val],
 ];
+
+/** Jugador con mayor valoración del partido (en caso de empate, más puntos). */
+export function mejorDelPartido(acta) {
+  let mejor = null;
+  acta.equipos.forEach((filas, lado) => filas.forEach(f => {
+    if (!f.s && !f.pts) return;
+    if (!mejor || f.val > mejor.f.val || (f.val === mejor.f.val && f.pts > mejor.f.pts)) mejor = { f, lado };
+  }));
+  return mejor;
+}
 
 const suma = filas => {
   const t = { d: '', n: 'Total', s: 0, pts: 0, t1: [0, 0], t2: [0, 0], t3: [0, 0], ro: 0, rd: 0, ast: 0, rob: 0, per: 0, tc: 0, tr: 0, fc: 0, fr: 0, val: 0, mm: null };
@@ -56,6 +66,9 @@ const suma = filas => {
  */
 export function pintarActa(acta, { equipos, jugador = x => x, enlace = () => null, enPista } = {}) {
   const box = el('div', null, 'acta');
+  const todos = acta.equipos.flat();
+  const maximos = COLS.map(c => c[4] ? Math.max(...todos.map(c[4])) : null);
+  const mvp = mejorDelPartido(acta);
   if (acta.periodos?.length) {
     const t = el('table', null, 'acta-cuartos'), h = el('tr');
     h.append(el('th', ''), ...acta.periodos.map((_, i) => el('th', i < 4 ? i + 1 + '.º' : 'Pr' + (i > 4 ? i - 3 : ''))), el('th', 'Total'));
@@ -86,14 +99,20 @@ export function pintarActa(acta, { equipos, jugador = x => x, enlace = () => nul
       if (href) { const a = el('a', nombre); a.href = href; td.append(a); } else td.append(document.createTextNode(nombre));
       if (!total && enPista?.[lado]?.has(f.d)) td.append(el('span', '● en pista', 'pista-tag'));
       if (!total && f.fc >= 5) td.append(el('span', 'eliminado', 'falta-tag'));
+      if (!total && mvp && mvp.f === f) { td.append(el('span', '★ MVP', 'mvp-tag')); tr.classList.add('mvp'); }
       tr.append(td);
-      for (const [, v, ana] of COLS) tr.append(el('td', String(v(f)), ana ? 'num solo-ana' : 'num'));
+      COLS.forEach(([, v, ana, , num], i) => {
+        const top = !total && num && maximos[i] > 0 && num(f) === maximos[i];
+        const td2 = el('td', String(v(f)), (ana ? 'num solo-ana' : 'num') + (top ? ' maximo' : ''));
+        if (top) td2.title = 'Máximo del partido';
+        tr.append(td2);
+      });
       tb.append(tr);
     }
     t.append(thead, tb);
     const w = el('div', null, 'table-wrap'); w.append(t); box.append(w);
   });
-  box.append(el('p', '* titular · fila resaltada: 4 faltas · nombre tachado: eliminado (5 faltas) · ● en pista: jugando ahora.', 'acta-nota'));
+  box.append(el('p', '* titular · ★ MVP: mejor valoración del partido · en negrita, el máximo del partido en cada estadística · fila resaltada: 4 faltas · nombre tachado: eliminado (5 faltas) · ● en pista: jugando ahora.', 'acta-nota'));
   return box;
 }
 
