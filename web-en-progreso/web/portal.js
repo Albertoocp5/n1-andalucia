@@ -321,6 +321,7 @@ function pintarTuEquipo(){
   tuEquipo.replaceChildren(cab,partidos,pie);
 }
 window.addEventListener('n1-equipo',()=>render());
+window.addEventListener('n1-avisos',()=>pintarTuEquipo());
 function render(){renderControls();renderBoard();pintarTuEquipo()}
 $('#week').onchange=e=>{week=e.target.value;history.replaceState(null,'','?jornada='+encodeURIComponent(week));render()};
 $('#dismiss').onclick=()=>$('#matchDialog').close();

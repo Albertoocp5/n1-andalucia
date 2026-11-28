@@ -54,7 +54,10 @@ function llamar(ruta, campos) {
 
 // Calendario de la federación (los identificadores de partido cambian con cada sesión).
 let calendario = null, calendarioHora = 0;
+const CAL = 'n1-fab-cal';
 async function cargarCalendario() {
+  // Se guarda 15 minutos en la pestaña para no volver a descargarlo al cambiar de página.
+  if (!calendario) try { const c = JSON.parse(sessionStorage.getItem(CAL)); if (c) { calendario = c; calendarioHora = c.hora; } } catch {}
   if (calendario && Date.now() - calendarioHora < 15 * 60e3 && calendario.ses === ses.id_dispositivo) return calendario;
   const cats = await llamar('busqueda.ashx', { accion: 'buscarCategoria', texto: 'N1 MAS', skip: '0' });
   const cat = (cats.categorias || []).find(c => c.NombreCategoria === CATEGORIA && c.NombreCompeticion.trim() === COMPETICION);
@@ -64,10 +67,12 @@ async function cargarCalendario() {
   for (const fase of gr.listaFasesGrupo || []) for (const g of fase.Grupos || []) {
     const r = await llamar('categoria.ashx', { accion: 'horariosJornadas', id_fase: fase.IdFase, id_grupo: g.IdGrupo, id_ronda: '', id_categoria_competicion: cat.Id, fecha_inicial: '', fecha_final: '' });
     const letra = g.NombreGrupo.replace('GRUPO', '').trim();
-    for (const p of r.partidos || []) lista.push({ ...p, group: letra });
+    for (const p of r.partidos || []) lista.push({ IdPartido: p.IdPartido, Estado: p.Estado, FechaHoraUTC: p.FechaHoraUTC,
+      NombreEquipoLocal: p.NombreEquipoLocal, NombreEquipoVisitante: p.NombreEquipoVisitante, group: letra });
   }
-  calendario = { ses: ses.id_dispositivo, lista };
   calendarioHora = Date.now();
+  calendario = { ses: ses.id_dispositivo, lista, hora: calendarioHora };
+  try { sessionStorage.setItem(CAL, JSON.stringify(calendario)); } catch {}
   return calendario;
 }
 

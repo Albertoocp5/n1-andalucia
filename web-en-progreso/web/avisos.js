@@ -20,9 +20,10 @@ export async function activar() {
   const permiso = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
   escribir(ACTIVOS, permiso === 'granted');
   if (permiso === 'granted') await prepararServiceWorker();
+  window.dispatchEvent(new CustomEvent('n1-avisos'));
   return permiso === 'granted';
 }
-export const desactivar = () => escribir(ACTIVOS, false);
+export const desactivar = () => { escribir(ACTIVOS, false); window.dispatchEvent(new CustomEvent('n1-avisos')); };
 
 async function mostrar(titulo, cuerpo, { etiqueta, url, icono }) {
   const opciones = { body: cuerpo, tag: etiqueta, renotify: true, icon: icono, badge: icono, data: { url } };
