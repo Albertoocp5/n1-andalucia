@@ -178,21 +178,31 @@ function setModo(m) {
   window.dispatchEvent(new CustomEvent('n1-modo', { detail: m }));
 }
 document.documentElement.dataset.modo = store.get('n1-modo', 'analista');
+// Pantalla de entrada (como elparcialbasket): solo la primera vez; la elección se guarda en el navegador.
 function renderModo() {
-  if (store.get('n1-modo', null) == null) {
-    const d = el('dialog', null, 'modo-dialog');
-    d.append(el('h2', '¿Cómo quieres ver N1 Andalucía?'), el('p', 'Puedes cambiarlo cuando quieras desde la cabecera.', 'adv-note'));
-    const opts = el('div', null, 'modo-opts');
-    for (const [m, t, s] of [['aficionado', 'Aficionado', 'Resultados, clasificación, líderes y fichas con lo básico, de un vistazo.'], ['analista', 'Analista', 'Para cuerpo técnico: todas las métricas, quintetos, mapas de tiro, impacto y simulador.']]) {
-      const b = el('button', null, 'modo-opt'); b.type = 'button';
-      b.append(el('b', t), el('span', s), el('em', 'Entrar →'));
-      b.onclick = () => { setModo(m); d.close(); d.remove(); };
-      opts.append(b);
-    }
-    d.append(opts);
-    document.body.append(d);
-    d.showModal();
+  if (store.get('n1-modo', null) != null) return;
+  const capa = el('div', null, 'entrada');
+  capa.setAttribute('role', 'dialog'); capa.setAttribute('aria-modal', 'true'); capa.setAttribute('aria-labelledby', 'entradaTitulo');
+  const barra = el('div', null, 'entrada-barra');
+  const logo = el('span', null, 'entrada-logo'); logo.append(el('span', 'N1', 'logo'), el('b', 'N1 Andalucía'));
+  barra.append(logo);
+  const caja = el('div', null, 'entrada-caja');
+  const h = el('h1', '¿Cómo quieres ver N1 Andalucía?'); h.id = 'entradaTitulo';
+  caja.append(h, el('p', 'Puedes cambiarlo cuando quieras desde la cabecera.', 'entrada-sub'));
+  const opciones = [['aficionado', 'Aficionado', 'Resultados, directo, clasificación, líderes y tu equipo, de un vistazo.'],
+    ['analista', 'Analista', 'Para cuerpo técnico: todas las métricas, quintetos, mapas de tiro, comparador y jugada a jugada.']];
+  let primero = null;
+  for (const [m, t, d] of opciones) {
+    const b = el('button', null, 'entrada-opcion' + (m === 'aficionado' ? ' destacada' : '')); b.type = 'button';
+    b.append(el('b', t), el('span', d), el('em', 'Entrar →'));
+    b.onclick = () => { setModo(m); capa.remove(); document.documentElement.classList.remove('con-entrada'); };
+    caja.append(b); primero ??= b;
   }
+  caja.append(el('p', 'La elección se guarda en este navegador.', 'entrada-nota'));
+  capa.append(barra, caja);
+  document.documentElement.classList.add('con-entrada');
+  document.body.append(capa);
+  primero.focus();
 }
 
 // ---------- Explicaciones emergentes ----------
