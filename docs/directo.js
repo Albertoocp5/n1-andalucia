@@ -81,7 +81,8 @@ export function hayQueSeguir(games) {
     if (g.status === 'En juego') return true;
     if (g.status === 'Final' || !g.date || !/^\d\d:\d\d/.test(g.time || '')) return false;
     const falta = madrid(g.date, g.time) - ahora;
-    return falta < 40 * 60e3 && falta > -3 * 3600e3;
+    // hasta 12 horas después del inicio: si GitHub aún no ha publicado el resultado, se recoge de la federación
+    return falta < 40 * 60e3 && falta > -12 * 3600e3;
   });
 }
 function madrid(fecha, hora) {
@@ -94,11 +95,15 @@ function madrid(fecha, hora) {
 }
 
 /** Consulta la federación y devuelve, por partido (grupo+local/visitante), marcador, estado y reloj. */
-export async function consultar() {
+export async function consultar(games = []) {
   const { lista } = await cargarCalendario();
   const ahora = Date.now(), out = new Map();
+  const id = p => p.group + clave(p.NombreEquipoLocal) + '/' + clave(p.NombreEquipoVisitante);
+  // partidos que la web aún no tiene como terminados (para recoger el resultado final aunque GitHub vaya tarde)
+  const pendientes = new Set(games.filter(g => g.status !== 'Final').map(g => g.group + clave(g.home) + '/' + clave(g.away)));
   const vigilar = lista.filter(p => ['En juego', 'En curso'].includes(p.Estado)
-    || (!['Terminado', 'Aplazado', 'Suspendido'].includes(p.Estado) && ahora - inicio(p) < 3 * 3600e3 && inicio(p) - ahora < 5 * 60e3));
+    || (!['Terminado', 'Aplazado', 'Suspendido'].includes(p.Estado) && ahora - inicio(p) < 3 * 3600e3 && inicio(p) - ahora < 5 * 60e3)
+    || (p.Estado === 'Terminado' && pendientes.has(id(p)) && ahora - inicio(p) < 12 * 3600e3 && ahora > inicio(p)));
   for (const p of vigilar) {
     const r = await llamar('envivo/partido.ashx', { id_partido: p.IdPartido });
     if (r?.resultado !== 'correcto' || !r.partido) continue;
@@ -106,7 +111,7 @@ export async function consultar() {
     const fin = cab.estado_partido === 'FINALIZADO';
     if (!fin && !hist.length) continue; // aún no ha empezado
     const ultima = hist.reduce((a, b) => (b.autoincremental_id > (a?.autoincremental_id ?? -1) ? b : a), null);
-    out.set(p.group + clave(p.NombreEquipoLocal) + '/' + clave(p.NombreEquipoVisitante), {
+    out.set(id(p), {
       status: fin ? 'Final' : 'En juego',
       score: [Number(cab.tanteo_local) || 0, Number(cab.tanteo_visitante) || 0],
       clock: fin ? '' : reloj(ultima),
