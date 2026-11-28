@@ -1,6 +1,7 @@
 import {initScout} from './scouting.js';
 import {equipo as eq, jugador as pn, botonComparar, escudo, avatar, modo as modoActual, equipoFavorito, setEquipoFavorito, botonSeguir} from './comun.js';
 import {standings, formaNode} from './clasif.js';
+import * as avisos from './avisos.js';
 import {hayQueSeguir, consultar, jugadas as jugadasDirecto, actaDirecto} from './directo.js';
 import {pintarActa, pintarEnPista, mejorDelPartido} from './acta.js';
 const $ = selector => document.querySelector(selector);
@@ -306,7 +307,17 @@ function pintarTuEquipo(){
   const pie=make('div',null,'tu-equipo-pie');
   const cl=make('a','Clasificación del grupo '+grupo+' →');cl.href='/clasificacion.html?grupo='+grupo;
   const fi=make('a','Ficha del equipo →');fi.href='/equipo.html?n='+encodeURIComponent(fav);
-  pie.append(fi,cl,selectorEquipo('Cambiar: '));
+  pie.append(fi,cl);
+  if(avisos.soportados()){
+    const bt=make('button',null,'avisos-btn');bt.type='button';
+    const pinta=()=>{const on=avisos.activos(),bloq=Notification.permission==='denied';
+      bt.textContent=bloq?'🔕 Avisos bloqueados en el navegador':on?'🔔 Avisos del partido activados':'🔔 Activar avisos del partido';
+      bt.setAttribute('aria-pressed',String(on));bt.disabled=bloq;
+      bt.title=on?'Pulsa para desactivarlos':'Inicio, final de cada cuarto, último minuto, prórroga y final del partido de tu equipo, mientras tengas la web abierta';};
+    bt.onclick=async()=>{if(avisos.activos())avisos.desactivar();else await avisos.activar();pinta()};
+    pinta();pie.append(bt);
+  }
+  pie.append(selectorEquipo('Cambiar: '));
   tuEquipo.replaceChildren(cab,partidos,pie);
 }
 window.addEventListener('n1-equipo',()=>render());
@@ -345,10 +356,19 @@ function aplicarDirecto(){
 async function refrescarDirecto(){
   if(consultando||!hayQueSeguir(games))return;
   consultando=true;
-  try{directo=await consultar(games);directoHora=Date.now();aplicarDirecto();render()}catch(e){console.warn('Directo no disponible:',e.message)}
+  try{directo=await consultar(games);directoHora=Date.now();aplicarDirecto();render();avisarTuEquipo()}catch(e){console.warn('Directo no disponible:',e.message)}
   finally{consultando=false}
 }
-(function vivo(){setTimeout(async()=>{if(!document.hidden)await refrescarDirecto();vivo()},15000)})();
+// Avisos del partido de tu equipo (avisos.js): se revisan en cada consulta del directo.
+function avisarTuEquipo(){
+  const fav=equipoFavorito();if(!fav||!avisos.activos())return;
+  for(const g of games.filter(x=>x.home===fav||x.away===fav)){
+    const d=directoDe(g);if(!d)continue;const id=idPartido(g);
+    avisos.revisar(id,d,[eq(g.home),eq(g.away)],{url:new URL(location.pathname+'?partido='+encodeURIComponent(id),location.href).href});
+  }
+}
+// Con la pestaña en segundo plano solo se sigue consultando si hay avisos activados (el navegador lo ralentiza a ~1 vez por minuto).
+(function vivo(){setTimeout(async()=>{if(!document.hidden||avisos.activos())await refrescarDirecto();vivo()},15000)})();
 render();refresh().then(refrescarDirecto);
 // Con partidos en juego el marcador se consulta cada 30 s; si no, cada 5 min.
 (function poll(){setTimeout(async()=>{if(!document.hidden)await refresh();poll()},games.some(g=>g.status==='En juego')?30000:300000)})();
