@@ -5,9 +5,10 @@ name: Actualizar datos de Afición FAB
 # publicando el directo cada ~5 minutos hasta que llega la siguiente.
 on:
   schedule:
-    - cron: "0 7 * * 1"
-    - cron: "0 10-22 * * 0,5,6"
-    - cron: "0 17-21 * * 1-4"
+    # Minutos sueltos (no en punto): GitHub retrasa o se salta muchas ejecuciones a en punto.
+    - cron: "7 7 * * 1"
+    - cron: "7,37 10-22 * * 0,5,6"
+    - cron: "7,37 17-21 * * 1-4"
   workflow_dispatch:
   # también al subir cambios de código (no de datos), para probar en el momento
   push:
@@ -24,7 +25,7 @@ concurrency:
 jobs:
   actualizar:
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    timeout-minutes: 330
     steps:
       - uses: actions/checkout@v4
 
@@ -81,8 +82,8 @@ jobs:
           git push
 
       # Seguimiento en directo: mientras haya partidos en juego (o a punto de empezar), repite
-      # descarga, carga, exportación y publicación cada ~5 minutos durante casi una hora; la
-      # siguiente ejecución programada continúa. GitHub Pages admite unas 10 publicaciones por hora.
+      # descarga, carga, exportación y publicación cada ~5 minutos hasta que no quedan partidos
+      # (máximo ~5 horas por ejecución, por si GitHub se salta las programadas). GitHub Pages admite unas 10 publicaciones por hora.
       - name: Directo de la jornada
         env:
           N1_SITE: http://localhost:8787
@@ -91,7 +92,7 @@ jobs:
         run: |
           inicio=$(date +%s)
           while [ "$(python3 captura-app/hay_directo.py datos-fab-vivo/calendario.json)" = si ]; do
-            [ $(( $(date +%s) - inicio )) -lt 3000 ] || { echo "Fin de esta ejecución; sigue la próxima"; break; }
+            [ $(( $(date +%s) - inicio )) -lt 17400 ] || { echo "Fin de esta ejecución; sigue la próxima"; break; }
             sleep 270
             echo "== Directo $(date -u +%H:%M:%S)"
             ( cd captura-app && python3 recolectar.py ../datos-fab-vivo ) || { echo "Afición FAB no responde; reintento"; continue; }

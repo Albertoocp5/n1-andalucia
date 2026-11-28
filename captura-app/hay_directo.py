@@ -2,11 +2,11 @@
 """¿Hay que seguir actualizando en directo? Imprime «si» o «no» leyendo el calendario guardado.
 
 Sí cuando algún partido está en juego, o no ha terminado y su hora de inicio está entre hace
-3 horas y dentro de 40 minutos (la app de la federación a veces marca el inicio tarde)."""
+3 horas y dentro de 90 minutos (la app de la federación a veces marca el inicio tarde)."""
 import json, re, sys, time
 from pathlib import Path
 
-ANTES, DESPUES = 40 * 60, 3 * 3600
+ANTES, DESPUES = 90 * 60, 3 * 3600
 
 
 def main():
