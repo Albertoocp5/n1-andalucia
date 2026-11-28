@@ -368,3 +368,9 @@ tr.fav td{background:var(--hl-bg)}
 .pasos-ios li{margin:.25rem 0}
 .pasos-ios-box{flex-basis:100%;font-weight:500}
 .pasos-ios-box summary{color:var(--accent-text);font-weight:700}
+.franja-instalar{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;z-index:930;width:min(560px,calc(100% - 24px));display:flex;align-items:center;gap:.75rem;background:var(--brand);color:#fff;border-radius:14px;padding:.75rem .8rem .75rem 1rem;box-shadow:0 8px 24px rgba(16,26,58,.28)}
+.franja-instalar .fi-texto{display:grid;flex:1;line-height:1.3}
+.franja-instalar .fi-texto span{color:#DCE2F5;font-size:.82rem}
+.franja-instalar .fi-instalar{border:0;border-radius:999px;background:#FF6B2C;color:var(--brand);font-weight:800;padding:.5rem 1rem;cursor:pointer}
+.franja-instalar .fi-cerrar{border:0;background:none;color:#DCE2F5;font-size:1.4rem;line-height:1;padding:.2rem .4rem;cursor:pointer}
+@media (max-width:640px){.franja-instalar{bottom:calc(62px + env(safe-area-inset-bottom))}}
