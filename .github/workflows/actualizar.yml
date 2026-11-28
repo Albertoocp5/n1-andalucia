@@ -96,7 +96,8 @@ jobs:
             sleep 270
             echo "== Directo $(date -u +%H:%M:%S)"
             # recoger los cambios de código subidos durante la jornada y recompilar la web con ellos
-            git pull -q --rebase || git rebase --abort 2>/dev/null
+            # (un fallo aquí nunca debe parar el bucle: se sigue con el código que ya había)
+            git pull -q --rebase --autostash || { git rebase --abort 2>/dev/null; true; }
             ( cd web-en-progreso && node scripts/build.mjs > /dev/null ) || echo "No se pudo recompilar; se usa la versión anterior"
             ( cd captura-app && python3 recolectar.py ../datos-fab-vivo ) || { echo "Afición FAB no responde; reintento"; continue; }
             ( cd web-en-progreso \
@@ -106,5 +107,5 @@ jobs:
             git add datos-fab-vivo docs
             git diff --cached --quiet && continue
             git commit -q -m "Directo Afición FAB $(date -u +%Y-%m-%dT%H:%MZ)"
-            git pull -q --rebase && git push -q || echo "No se pudo publicar; reintento"
+            { git pull -q --rebase --autostash && git push -q; } || { git rebase --abort 2>/dev/null; echo "No se pudo publicar; reintento"; }
           done

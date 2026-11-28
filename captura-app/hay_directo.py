@@ -14,7 +14,7 @@ def main():
     ahora = time.time()
     for p in calendario:
         estado = p.get("Estado", "")
-        if estado in ("En juego", "En curso"):
+        if estado in ("En juego", "En curso", "Comenzado"):
             print("si"); return
         if estado in ("Terminado", "Aplazado", "Suspendido"):
             continue

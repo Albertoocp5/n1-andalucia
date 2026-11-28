@@ -107,7 +107,7 @@ export async function consultar(games = []) {
   const id = p => p.group + clave(p.NombreEquipoLocal) + '/' + clave(p.NombreEquipoVisitante);
   // partidos que la web aún no tiene como terminados (para recoger el resultado final aunque GitHub vaya tarde)
   const pendientes = new Set(games.filter(g => g.status !== 'Final').map(g => g.group + clave(g.home) + '/' + clave(g.away)));
-  const vigilar = lista.filter(p => ['En juego', 'En curso'].includes(p.Estado)
+  const vigilar = lista.filter(p => ['En juego', 'En curso', 'Comenzado'].includes(p.Estado)
     || (!['Terminado', 'Aplazado', 'Suspendido'].includes(p.Estado) && ahora - inicio(p) < 3 * 3600e3 && inicio(p) - ahora < 5 * 60e3)
     || (p.Estado === 'Terminado' && pendientes.has(id(p)) && ahora - inicio(p) < 12 * 3600e3 && ahora > inicio(p)));
   for (const p of vigilar) {

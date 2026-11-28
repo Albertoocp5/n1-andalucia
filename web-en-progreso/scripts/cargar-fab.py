@@ -46,14 +46,18 @@ def schedule(source, seed):
         if id in fixtures:
             raise ValueError("Partido FAB duplicado")
         statuses = {"Terminado":"Final", "No comenzado":"Programado", "En juego":"En juego",
-                    "En curso":"En juego", "Aplazado":"Aplazado", "Suspendido":"Suspendido"}
+                    "En curso":"En juego", "Comenzado":"En juego", "Aplazado":"Aplazado", "Suspendido":"Suspendido"}
         status = statuses.get(item["Estado"])
         if status is None:  # estado nuevo de la FAB: se decide por si hay marcador
             has_score = any(str((item.get("Resultados") or {}).get(k) or "").strip() not in ("", "0")
                             for k in ("ResultadoLocal", "ResultadoVisitante"))
             status = "En juego" if has_score else "Programado"
             print("Aviso: estado FAB desconocido", repr(item["Estado"]), "→", status, flush=True)
-        score = [int(item["Resultados"][k]) for k in ("ResultadoLocal", "ResultadoVisitante")] if status in ("Final","En juego") else None
+        # Recién empezado, la FAB pone «-» como resultado: entonces 0-0 (el marcador real llega de las jugadas).
+        raw = [str((item.get("Resultados") or {}).get(k) or "").strip() for k in ("ResultadoLocal", "ResultadoVisitante")]
+        score = [int(v) if v.isdigit() else 0 for v in raw] if status in ("Final","En juego") else None
+        if status == "Final" and not all(v.isdigit() for v in raw):
+            score = None
         match = {"id": id, "date": datetime.strptime(item["Fecha"], "%d/%m/%Y").date().isoformat(),
                  "time": item["Hora"][:5], "round": f"Jornada {item['NumeroJornada']}",
                  "venue": item["CampoJuego"].strip(), "status": status, "score": score}
