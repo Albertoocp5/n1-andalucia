@@ -331,3 +331,29 @@ html.con-entrada,html.con-entrada body{overflow:hidden}
 .entrada-opcion:focus-visible{outline:3px solid #FF6B2C;outline-offset:3px}
 .entrada-nota{color:var(--mute);font-size:.82rem;margin:.6rem 0 0}
 :root[data-theme=dark] .entrada-opcion.destacada{background:#1A2755;border-color:#8FA6FF}
+
+/* ---------- Tu equipo ---------- */
+.tu-equipo{background:var(--surface);border:1px solid var(--line-2);border-radius:14px;padding:16px 18px;margin:1.4rem 0 0;box-shadow:inset 4px 0 0 #FF6B2C}
+.tu-equipo-vacio{display:flex;align-items:center;gap:.6rem 1rem;flex-wrap:wrap}
+.tu-equipo-vacio b{color:#FF6B2C}
+.tu-equipo-vacio span{color:var(--ink-2);flex:1 1 18rem}
+.tu-equipo-elegir{display:flex;align-items:center;gap:.4rem;font-weight:600;font-size:.85rem}
+.tu-equipo-elegir select{max-width:16rem}
+.tu-equipo-cab{display:flex;align-items:center;gap:.4rem 1rem;flex-wrap:wrap}
+.tu-equipo-cab .escudo-l{width:56px;height:56px;margin:0}
+.tu-equipo-nombre{display:grid;flex:1 1 14rem}
+.tu-equipo-nombre .kicker{color:#FF6B2C}
+.tu-equipo-nombre a{font-size:1.45rem;font-weight:800;color:var(--ink);text-decoration:none;letter-spacing:-.02em}
+.tu-equipo-datos{display:flex;align-items:center;gap:.4rem 1rem;flex-wrap:wrap;color:var(--ink-2)}
+.tu-equipo-datos .pos b{font-size:1.4rem;color:var(--ink)}
+.tu-equipo-partidos{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.8rem;margin:.9rem 0 .6rem}
+.tu-equipo-partidos>div{border:1px solid var(--line-2);border-radius:10px;overflow:hidden}
+.tu-equipo-partidos .kicker{display:block;padding:.45rem 1rem 0}
+.tu-equipo-pie{display:flex;align-items:center;gap:.5rem 1.2rem;flex-wrap:wrap;font-weight:600;font-size:.9rem}
+.tu-equipo-pie .tu-equipo-elegir{margin-left:auto;font-weight:500;color:var(--mute)}
+.game.fav{box-shadow:inset 3px 0 0 #FF6B2C}
+tr.fav td{background:var(--hl-bg)}
+.leader-box li.fav{background:var(--hl-bg)}
+.seguir-btn{margin-left:.6rem;vertical-align:middle;font-size:.85rem;border:1px solid #FF6B2C;color:#B4461A;background:transparent;border-radius:999px;padding:.25rem .8rem;font-weight:700;letter-spacing:0}
+.seguir-btn[aria-pressed=true]{background:#FF6B2C;color:var(--brand)}
+@media (max-width:640px){.tu-equipo-pie .tu-equipo-elegir{margin-left:0}.tu-equipo-nombre a{font-size:1.2rem}}
