@@ -95,6 +95,9 @@ jobs:
             [ $(( $(date +%s) - inicio )) -lt 17400 ] || { echo "Fin de esta ejecución; sigue la próxima"; break; }
             sleep 270
             echo "== Directo $(date -u +%H:%M:%S)"
+            # recoger los cambios de código subidos durante la jornada y recompilar la web con ellos
+            git pull -q --rebase || git rebase --abort 2>/dev/null
+            ( cd web-en-progreso && node scripts/build.mjs > /dev/null ) || echo "No se pudo recompilar; se usa la versión anterior"
             ( cd captura-app && python3 recolectar.py ../datos-fab-vivo ) || { echo "Afición FAB no responde; reintento"; continue; }
             ( cd web-en-progreso \
               && python3 scripts/cargar-fab.py ../datos-fab-vivo --publicar \
