@@ -1,6 +1,7 @@
 import {initScout} from './scouting.js';
-import {equipo as eq, jugador as pn, botonComparar, escudo} from './comun.js';
-import {hayQueSeguir, consultar, jugadas as jugadasDirecto} from './directo.js';
+import {equipo as eq, jugador as pn, botonComparar, escudo, avatar, modo as modoActual} from './comun.js';
+import {hayQueSeguir, consultar, jugadas as jugadasDirecto, actaDirecto} from './directo.js';
+import {pintarActa, pintarEnPista} from './acta.js';
 const $ = selector => document.querySelector(selector);
 const make = (tag,text,cls) => {
   const node=document.createElement(tag);
@@ -98,37 +99,111 @@ function leaderText(game){
   if(leaders.length>1)return leaders.map(p=>p.name).join(' y ')+' compartieron el máximo anotador con '+max+' puntos.';
   const p=leaders[0];return p.name+' lideró la anotación con '+max+' puntos'+(p.reb!=null&&p.reb!==''?', '+p.reb+' rebotes':'')+(p.ast!=null&&p.ast!==''?' y '+p.ast+' asistencias':'')+'.';
 }
-function showGame(g){
-  const body=$('#matchBody');
-  body.replaceChildren(make('small','GRUPO '+g.group+' · '+(g.round?g.round.toUpperCase()+' · ':'')+pretty(g.date)+' · '+g.time,'kicker'),make('h2',eq(g.home)+' — '+eq(g.away)));
-  const score=g.liveScore||g.score;
-  if(score)body.append(make('h3',score.join(' – ')+' · '+(g.liveScore?'Parcial · en juego':g.status)));
-  if(g.venue)body.append(make('p',g.venue));
-  if(g.verified){
-    const winner=eq(g.score[0]>g.score[1]?g.home:g.away);
-    body.append(make('h3','Crónica del partido'),make('p',winner+' ganó por '+Math.abs(g.score[0]-g.score[1])+' puntos. '+leaderText(g)),make('small',g.source?'Informe de '+g.source:'Informe del archivo histórico'));
-  }
+// ---------- Ventana del partido: Resumen · Acta · Jugada a jugada · Avanzado ----------
+let liveTimer=null,ultimaPestana='resumen';
+const idPartido=g=>g.url?.split('?')[0].split('/').at(-1);
+async function cargarActa(g){
+  const d=directoDe(g);
+  if(d&&d.status!=='Final'){try{return {...await actaDirecto(d),vivo:true}}catch{}}
+  try{const r=await fetch('./api/actas/'+encodeURIComponent(idPartido(g))+'.json');if(r.ok)return {acta:await r.json()}}catch{}
+  if(d){try{return await actaDirecto(d)}catch{}}
+  return null;
+}
+function cajaAntigua(g){
+  const box=make('div');
   for(const team of g.box||[]){
-    body.append(make('h3',eq(team.team)));const wrap=make('div',null,'table-wrap'),table=make('table');
+    box.append(make('h3',eq(team.team)));const wrap=make('div',null,'table-wrap'),table=make('table');
     const hr=make('tr');for(const h of ['Jugador',...fieldNames])hr.append(make('th',h));table.append(hr);
     for(const row of team.rows){
       const tr=make('tr'),td=make('td'),a=make('a',pn(row[1]));a.href='./jugador.html?id='+encodeURIComponent(row[0]);td.append(a);tr.append(td);
       row.slice(2,16).forEach(v=>tr.append(make('td',v)));table.append(tr);
     }
-    wrap.append(table);body.append(wrap);
+    wrap.append(table);box.append(wrap);
   }
-  if(!g.box?.length&&g.score)body.append(make('p','Estadísticas individuales pendientes de un acta verificable.'));
-  if(g.box?.length&&!g.verified)body.append(make('p','La suma de puntos individuales o el desglose disponible difiere del marcador. Revisión pendiente.'));
-  if(score){
-    const plays=make('section',null,'match-plays');
-    body.append(plays);
-    const report=make('section',null,'adv-report');
-    body.insertBefore(report,plays);
-    showAdvanced(g,report);
-    showFabTimeline(g,plays);
+  return box;
+}
+function showGame(g){
+  clearTimeout(liveTimer);
+  const body=$('#matchBody');
+  const h2=make('h2',null,'match-teams');
+  h2.append(escudo(g.home,'m'),make('span',eq(g.home)),make('span','—','vs'),make('span',eq(g.away)),escudo(g.away,'m'));
+  const marcador=make('p',null,'match-score');
+  body.replaceChildren(make('small','GRUPO '+g.group+' · '+(g.round?g.round.toUpperCase()+' · ':'')+pretty(g.date)+' · '+g.time,'kicker'),h2,marcador);
+  const pintaMarcador=()=>{
+    const s=g.liveScore||g.score;marcador.replaceChildren();
+    if(!s)return;
+    marcador.append(make('b',s.join(' – ')));
+    const vivo=g.status==='En juego';
+    marcador.append(make('span',vivo?'● En juego'+(clocks.get(g.url)?' · '+clocks.get(g.url):''):g.status,vivo?'st-live':''));
+  };
+  pintaMarcador();
+  if(g.venue)body.append(make('p',g.venue,'match-venue'));
+  if(!(g.liveScore||g.score)){body.append(preview(g,games));if(!$('#matchDialog').open)$('#matchDialog').showModal();return}
+
+  const pestanas=[['resumen','Resumen'],['acta',g.status==='En juego'?'Acta en directo':'Acta'],['jugadas','Jugada a jugada'],['avanzado','Avanzado',1]];
+  const bar=make('div',null,'match-tabs');bar.setAttribute('role','tablist');
+  const secciones={};
+  for(const [k,txt,ana] of pestanas){
+    const b=make('button',txt,ana?'solo-ana':'');b.type='button';b.setAttribute('role','tab');b.dataset.tab=k;
+    b.onclick=()=>elegir(k);bar.append(b);
+    secciones[k]=make('section',null,'match-panel'+(k==='avanzado'?' solo-ana':''));
   }
-  if(!score)body.append(preview(g,games));
+  function elegir(k){
+    if(k==='avanzado'&&modoActual()!=='analista')k='resumen';
+    ultimaPestana=k;
+    for(const b of bar.children)b.setAttribute('aria-selected',String(b.dataset.tab===k));
+    for(const [n,sec] of Object.entries(secciones))sec.hidden=n!==k;
+  }
+  body.append(bar,...Object.values(secciones));
+
+  // Resumen
+  const res=secciones.resumen,enPistaBox=make('div'),resActa=make('div');
+  if(g.verified){
+    const winner=eq(g.score[0]>g.score[1]?g.home:g.away);
+    res.append(make('h3','Crónica del partido'),make('p',winner+' ganó por '+Math.abs(g.score[0]-g.score[1])+' puntos. '+leaderText(g)));
+  }
+  res.append(enPistaBox,resActa);
+  const irActa=action(g.status==='En juego'?'Ver el acta en directo →':'Ver el acta completa →',()=>elegir('acta'),'link-btn');
+  const irJug=action('Ver la jugada a jugada →',()=>elegir('jugadas'),'link-btn');
+  const acciones=make('p',null,'match-actions');acciones.append(irActa,irJug);res.append(acciones);
+
+  // Acta
+  const actaSec=secciones.acta;actaSec.append(make('p','Cargando el acta…','acta-nota'));
+  const ids=new Map();
+  (g.box||[]).forEach(t=>{const lado=key(t.team)===key(g.home)?0:1;for(const r of t.rows)ids.set(lado+'|'+key(r[1]),r[0])});
+  const opciones=enPista=>({equipos:[eq(g.home),eq(g.away)],jugador:pn,enPista,
+    enlace:(f,lado)=>{const id=ids.get(lado+'|'+key(f.n));return id?'./jugador.html?id='+encodeURIComponent(id):null}});
+  async function pintarDatos(){
+    const datos=await cargarActa(g);
+    if(!datos){actaSec.replaceChildren(g.box?.length?cajaAntigua(g):make('p','Estadísticas individuales pendientes de un acta verificable.'));return}
+    const pista=datos.enPista?.some(l=>l.length)?datos.enPista:null;
+    const sets=pista?pista.map(l=>new Set(l.map(j=>String(j.dorsal)))):null;
+    const stamp=datos.vivo?make('p','Acta en directo de Afición FAB · actualizada a las '+new Date(datos.hora).toLocaleTimeString('es-ES',{timeZone:'Europe/Madrid'})+' · se actualiza sola','acta-nota live'):make('p','Acta de Afición FAB','acta-nota');
+    actaSec.replaceChildren(stamp,pintarActa(datos.acta,opciones(sets)));
+    enPistaBox.replaceChildren();
+    if(datos.vivo&&pista){
+      enPistaBox.append(make('h3','En pista ahora'),pintarEnPista(pista,{equipos:[eq(g.home),eq(g.away)],jugador:pn,avatar:j=>avatar(j.nombre,Number(j.idequipo)===Number(pista[0][0]?.idequipo)?g.home:g.away,'xs')}));
+    }
+    // parciales por cuarto también en el resumen
+    const cuartos=actaSec.querySelector('.acta-cuartos');
+    resActa.replaceChildren();
+    if(cuartos){resActa.append(make('h3','Parciales'));const w=make('div',null,'table-wrap');w.append(cuartos.cloneNode(true));resActa.append(w)}
+    // máximos anotadores del partido
+    const top=datos.acta.equipos.map((f,l)=>[...f].sort((a,b)=>b.pts-a.pts)[0]&&{l,f:[...f].sort((a,b)=>b.pts-a.pts)[0]}).filter(Boolean);
+    if(top.length&&!g.verified){const p=make('p',null,'acta-top');p.append('Máximos anotadores: '+top.map(x=>pn(x.f.n)+' ('+eq([g.home,g.away][x.l])+') '+x.f.pts+' pts').join(' · '));resActa.append(p)}
+  }
+  pintarDatos();
+
+  // Jugada a jugada y avanzado
+  showFabTimeline(g,secciones.jugadas);
+  showAdvanced(g,secciones.avanzado);
+  if(g.box?.length&&!g.verified)res.append(make('p','La suma de puntos individuales o el desglose disponible difiere del marcador. Revisión pendiente.'));
+
+  elegir(ultimaPestana);
   if(!$('#matchDialog').open)$('#matchDialog').showModal();
+  // En directo: marcador, quinteto en pista y acta se refrescan cada 15 s mientras la ventana esté abierta.
+  const vivo=()=>{liveTimer=setTimeout(async()=>{if(!$('#matchDialog').open||!body.contains(marcador))return;pintaMarcador();if(g.status==='En juego'||directoDe(g)?.status==='En juego'){await pintarDatos();vivo()}else pintarDatos()},15000)};
+  if(g.status==='En juego')vivo();
 }
 const playLabels={
   'CANASTA-1P':'Tiro libre anotado','CANASTA-2P':'Canasta de dos','CANASTA-3P':'Triple',

@@ -2,6 +2,7 @@
 // oficial, que permite peticiones desde otras webs) solo mientras hay partidos de la N1 en juego
 // o a punto de empezar. Si la federación no responde, la web sigue con los datos publicados en
 // GitHub (actualizados cada ~5 minutos durante la jornada).
+import { actaFab } from './acta.js';
 const BASE = 'https://appaficionfab.gesdeportiva.es/';
 const SESION = 'n1-fab-sesion';
 const CATEGORIA = 'LIGA NACIONAL N1 MAS', COMPETICION = 'COMPETICIONES-FAB-26-27';
@@ -156,4 +157,19 @@ export async function jugadas(dato) {
     events.push([a.autoincremental_id * 10 + n, a.numero_periodo, a.tiempo_partido || '', a.accion_tipo, lado, dorsal, lado >= 0 ? plantilla[lado][dorsal] || '' : '', sc, pts, null, null]);
   }
   return { events, status: dato.status, checkedAt: new Date().toISOString(), score: dato.score };
+}
+
+/** Acta en directo (estadísticas de cada jugador) y quién está en pista ahora mismo. */
+export async function actaDirecto(dato) {
+  const { raw, partido: p } = dato;
+  const est = await llamar('envivo/estadisticas.ashx', { id_partido: p.IdPartido });
+  if (est?.resultado !== 'correcto') throw Error('Acta no disponible');
+  const e = est.estadisticas || {};
+  const local = e.estadisticasequipolocal || [], visitante = e.estadisticasequipovisitante || [];
+  plantillas.set(p.IdPartido, [local, visitante].map(rows => Object.fromEntries(rows.filter(x => x.dorsal).map(x => [String(x.dorsal), x.nombre.trim()]))));
+  return {
+    acta: actaFab(local, visitante, est.partido?.periodos || raw.partido?.periodos),
+    enPista: [raw.envivo?.jugadoresenpistalocal || [], raw.envivo?.jugadoresenpistavisitante || []],
+    hora: new Date().toISOString(),
+  };
 }
