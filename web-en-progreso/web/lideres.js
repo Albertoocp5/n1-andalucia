@@ -1,4 +1,4 @@
-import { jugador as pn, equipo as eq, muestra, botonComparar, tipped, avatar } from '/comun.js';
+import { jugador as pn, equipo as eq, muestra, botonComparar, tipped, avatar, equipoFavorito } from '/comun.js';
 
 const $ = s => document.querySelector(s);
 const el = (tag, text, cls) => { const e = document.createElement(tag); if (text != null) e.textContent = text; if (cls) e.className = cls; return e; };
@@ -45,7 +45,7 @@ function render() {
     box.append(h, el('small', scaleLabel));
     const ol = el('ol');
     rows.forEach(([p, v], i) => {
-      const li = el('li');
+      const li = el('li', null, p.equipo === equipoFavorito() ? 'fav' : '');
       const who = el('span', null, 'who'); const a = el('a', pn(p.nombre)); a.href = '/jugador.html?id=' + encodeURIComponent(p.id);
       who.append(a, el('small', eq(p.equipo) + (g ? '' : ' · ' + p.grupo)));
       const val = el('b', (key === '+/-' || key === 'Net en pista' || key === 'On/Off') && v > 0 ? '+' + fmt(v, d) : fmt(v, key === 'MIN' && s === 'tot' ? 0 : d));

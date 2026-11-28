@@ -58,6 +58,22 @@ export function avatar(nombreActa, nombreEquipo, tam = 's') {
   return box;
 }
 
+// ---------- Tu equipo (se guarda en el navegador) ----------
+const FAV = 'n1-equipo';
+export const equipoFavorito = () => store.get(FAV, null);
+export function setEquipoFavorito(nombre) {
+  store.set(FAV, nombre);
+  window.dispatchEvent(new CustomEvent('n1-equipo', { detail: nombre }));
+}
+/** Botón «☆ Hacer mi equipo» / «★ Tu equipo». */
+export function botonSeguir(nombreEquipo) {
+  const b = el('button', null, 'seguir-btn'); b.type = 'button';
+  const pinta = () => { const on = equipoFavorito() === nombreEquipo; b.textContent = on ? '★ Tu equipo' : '☆ Hacer mi equipo'; b.setAttribute('aria-pressed', String(on)); b.title = on ? 'Dejar de seguir' : 'Destacar este equipo en toda la web'; };
+  b.onclick = () => setEquipoFavorito(equipoFavorito() === nombreEquipo ? null : nombreEquipo);
+  window.addEventListener('n1-equipo', pinta); pinta();
+  return b;
+}
+
 // ---------- Puestos ----------
 /** Puesto (1 = mejor) y tamaño de la población; null si no hay dato. */
 export function puesto(values, v, higher = true) {

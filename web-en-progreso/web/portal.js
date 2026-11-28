@@ -1,5 +1,6 @@
 import {initScout} from './scouting.js';
-import {equipo as eq, jugador as pn, botonComparar, escudo, avatar, modo as modoActual} from './comun.js';
+import {equipo as eq, jugador as pn, botonComparar, escudo, avatar, modo as modoActual, equipoFavorito, setEquipoFavorito, botonSeguir} from './comun.js';
+import {standings, formaNode} from './clasif.js';
 import {hayQueSeguir, consultar, jugadas as jugadasDirecto, actaDirecto} from './directo.js';
 import {pintarActa, pintarEnPista, mejorDelPartido} from './acta.js';
 const $ = selector => document.querySelector(selector);
@@ -47,7 +48,8 @@ function weekGames(selectedWeek,group){
   return games.filter(g=>g.round===selectedWeek&&g.group===group).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
 }
 function drawGame(game){
-  const b=action('',()=>showGame(game),'game');
+  const fav=equipoFavorito();
+  const b=action('',()=>showGame(game),'game'+(fav&&(game.home===fav||game.away===fav)?' fav':''));
   const md=mainDate.get(game.round),moved=md&&Math.abs(Date.parse(game.date)-Date.parse(md))>3*864e5;
   const state=game.status==='En juego'?'● En juego':game.status==='Final'?'Final':game.status==='Programado'?'Previa':game.status;
   const meta=make('small',pretty(game.date)+' · '+game.time+' · ');meta.append(make('span',state,'st st-'+(game.status==='Final'?'fin':game.status==='En juego'?'live':'prev')));
@@ -261,7 +263,53 @@ async function showFabTimeline(game,section){
     renderPlays();
   }catch{section.append(make('p','No se pudo cargar la secuencia de jugadas.'))}
 }
-function render(){renderControls();renderBoard()}
+// ---------- Tu equipo: tarjeta en la portada ----------
+const tuEquipo=make('section',null,'tu-equipo');
+document.querySelector('#marcador').before(tuEquipo);
+function selectorEquipo(texto){
+  const lab=make('label',texto,'tu-equipo-elegir');const sel=make('select');
+  sel.append(new Option('Elige un equipo…',''));
+  for(const gr of groups){const og=document.createElement('optgroup');og.label='Grupo '+gr;for(const t of [...(season.groups[gr]||[])].sort((a,b)=>eq(a).localeCompare(eq(b),'es')))og.append(new Option(eq(t),t));sel.append(og)}
+  sel.value=equipoFavorito()||'';sel.onchange=()=>setEquipoFavorito(sel.value||null);lab.append(sel);return lab;
+}
+function pintarTuEquipo(){
+  const fav=equipoFavorito();
+  const grupo=fav&&groups.find(gr=>(season.groups[gr]||[]).includes(fav));
+  if(!fav||!grupo){
+    const cab=make('div',null,'tu-equipo-vacio');
+    cab.append(make('b','★ Tu equipo'),make('span','Elige tu equipo y lo verás destacado en toda la web: su próximo partido, su puesto y sus jugadores.'),selectorEquipo(''));
+    tuEquipo.replaceChildren(cab);return;
+  }
+  const tabla=standings(games.filter(g=>g.group===grupo),season.groups[grupo]);
+  const fila=tabla.find(r=>r.equipo===fav);
+  const suyos=games.filter(g=>g.home===fav||g.away===fav).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  const vivo=suyos.find(g=>g.status==='En juego');
+  const proximo=suyos.find(g=>g.status!=='Final'&&g.status!=='En juego');
+  const ultimo=[...suyos].reverse().find(g=>g.status==='Final');
+  const cab=make('div',null,'tu-equipo-cab');
+  const nombre=make('div',null,'tu-equipo-nombre');
+  const a=make('a',eq(fav));a.href='/equipo.html?n='+encodeURIComponent(fav);
+  nombre.append(make('small','★ TU EQUIPO · GRUPO '+grupo,'kicker'),a);
+  const datos=make('div',null,'tu-equipo-datos');
+  if(fila){
+    datos.append(make('span',null,'pos'));datos.lastChild.append(make('b',fila.pos+'.º'),' de '+tabla.length);
+    datos.append(make('span',fila.g+' ganados · '+fila.p+' perdidos'));
+    const f=make('span');f.append(formaNode(fila));datos.append(f);
+  }
+  cab.append(escudo(fav,'l'),nombre,datos);
+  const partidos=make('div',null,'tu-equipo-partidos');
+  for(const [t,g] of [['En juego ahora',vivo],['Último partido',ultimo],['Próximo partido',proximo]]){
+    if(!g||(t==='Próximo partido'&&vivo))continue;
+    const col=make('div');col.append(make('small',t,'kicker'),drawGame(g));partidos.append(col);
+  }
+  const pie=make('div',null,'tu-equipo-pie');
+  const cl=make('a','Clasificación del grupo '+grupo+' →');cl.href='/clasificacion.html?grupo='+grupo;
+  const fi=make('a','Ficha del equipo →');fi.href='/equipo.html?n='+encodeURIComponent(fav);
+  pie.append(fi,cl,selectorEquipo('Cambiar: '));
+  tuEquipo.replaceChildren(cab,partidos,pie);
+}
+window.addEventListener('n1-equipo',()=>render());
+function render(){renderControls();renderBoard();pintarTuEquipo()}
 $('#week').onchange=e=>{week=e.target.value;history.replaceState(null,'','?jornada='+encodeURIComponent(week));render()};
 $('#dismiss').onclick=()=>$('#matchDialog').close();
 function mergeFeed(records){
